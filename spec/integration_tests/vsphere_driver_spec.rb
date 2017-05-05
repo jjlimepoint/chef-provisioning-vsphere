@@ -65,27 +65,43 @@ describe 'vsphere_driver' do
       expect(@vm.config.instanceUuid).to eq(@machine_spec.location['server_id'])
     end
     it 'has the correct name' do
+      custom_name = @metal_config[:machine_options][:bootstrap_options][:customization_spec][:hostname]
       now = Time.now.utc
-      trimmed_name = @vm.config.guestId.start_with?('win') ? @vm_name.byteslice(0, 15) : @vm_name
+      trimmed_name = if custom_name
+                       @vm.config.guestId.start_with?('win') ? custom_name.to_s.byteslice(0, 15) : custom_name
+                     else
+                       @vm.config.guestId.start_with?('win') ? @vm_name.byteslice(0, 15) : @vm_name
+                     end
       expected_name = "#{trimmed_name}.#{@metal_config[:machine_options][:bootstrap_options][:customization_spec][:domain]}"
       until (Time.now.utc - now) > 30 || (@vm.guest.hostName == expected_name)
         print '.'
         sleep 5
       end
-      expect(@vm.guest.hostName).to eq(expected_name)
+      unless @vm.config.guestId.start_with?('win')
+        expect(@vm.guest.hostName).to include(expected_name) #  # For linux
+      else
+        expect(expected_name).to include(@vm.guest.hostName)
+      end
+    end
+    it 'is on the correct networks' do
+      expect(@vm.network.map(&:name)).to include(@metal_config[:machine_options][:bootstrap_options][:network_name][0]) unless @vm.config.guestId.start_with?('win')
+      expect(@vm.network.map(&:name)).to include(@metal_config[:machine_options][:bootstrap_options][:network_name][1]) unless @vm.config.guestId.start_with?('win')
+    end
+    it 'is on the correct datastore' do
+      expect(@vm.datastore[0].name).to eq(@metal_config[:machine_options][:bootstrap_options][:datastore]) unless @vm.config.guestId.start_with?('win')
+    end
+    it 'is in the correct datacenter' do
+      expect(@vsphere_helper.vim.serviceInstance.find_datacenter(@metal_config[:machine_options][:bootstrap_options][:datacenter]).find_vm("#{@vm.parent.name}/#{@vm_name}")).not_to eq(nil) unless @vm.config.guestId.start_with?('win')
+    end
+    it 'has an added disk of the correct size' do
+      disk_count = @vm.disks.count
+      expect(@vm.disks[disk_count - 1].capacityInKB).to eq(@metal_config[:machine_options][:bootstrap_options][:additional_disk_size_gb][1] * 1024 * 1024) unless @vm.config.guestId.start_with?('win')
     end
     it 'has the correct number of CPUs' do
       expect(@vm.config.hardware.numCPU).to eq(@metal_config[:machine_options][:bootstrap_options][:num_cpus])
     end
     it 'has the correct amount of memory' do
       expect(@vm.config.hardware.memoryMB).to eq(@metal_config[:machine_options][:bootstrap_options][:memory_mb])
-    end
-    it 'is on the correct networks' do
-      expect(@vm.network.map(&:name)).to include(@metal_config[:machine_options][:bootstrap_options][:network_name][0])
-      expect(@vm.network.map(&:name)).to include(@metal_config[:machine_options][:bootstrap_options][:network_name][1])
-    end
-    it 'is on the correct datastore' do
-      expect(@vm.datastore[0].name).to eq(@metal_config[:machine_options][:bootstrap_options][:datastore])
     end
     it 'is in the correct resource pool' do
       if @metal_config[:machine_options][:bootstrap_options].key?(:resource_pool)
@@ -102,15 +118,8 @@ describe 'vsphere_driver' do
         expect(@vm.resourcePool.owner.name).to eq(@metal_config[:machine_options][:bootstrap_options][:resource_pool].split('/')[0])
       end
     end
-    it 'is in the correct datacenter' do
-      expect(@vsphere_helper.vim.serviceInstance.find_datacenter(@metal_config[:machine_options][:bootstrap_options][:datacenter]).find_vm("#{@vm.parent.name}/#{@vm_name}")).not_to eq(nil)
-    end
-    it 'has an added disk of the correct size' do
-      disk_count = @vm.disks.count
-      expect(@vm.disks[disk_count - 1].capacityInKB).to eq(@metal_config[:machine_options][:bootstrap_options][:additional_disk_size_gb][1] * 1024 * 1024)
-    end
     it 'has the correct number of disks' do
-      expect(@vm.disks.count).to eq(3)
+      expect(@vm.disks.count).to eq(3) unless @vm.config.guestId.start_with?('win')
     end
     it 'has hot add cpu enabled' do
       expect(@vm.config.cpuHotAddEnabled).to eq(true)

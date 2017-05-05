@@ -8,6 +8,7 @@ require 'chef/provisioning/vsphere_driver/clone_spec_builder'
 require 'chef/provisioning/vsphere_driver/version'
 require 'chef/provisioning/vsphere_driver/vsphere_helpers'
 require 'chef/provisioning/vsphere_driver/vsphere_url'
+require 'chef/provisioning/vsphere_driver/vm_helper'
 
 module ChefProvisioningVsphere
   # Provisions machines in vSphere.
@@ -72,7 +73,11 @@ module ChefProvisioningVsphere
       end
     end
 
-    attr_reader :connect_options
+    attr_reader :connect_options, :vm_helper
+
+    def vm_helper
+      @vm_helper ||= ChefProvisioningVsphere::VmHelper.new
+    end
 
     # Acquire a machine, generally by provisioning it.  Returns a Machine
     # object pointing at the machine, allowing useful actions like setup,
@@ -243,6 +248,8 @@ module ChefProvisioningVsphere
         setup_ubuntu_dns(machine, bootstrap_options, machine_spec)
       end
 
+      ## Check if true available after added nic
+      @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port) unless @vm_helper.ip.nil?
       machine
     end
 
@@ -377,10 +384,11 @@ module ChefProvisioningVsphere
 
     def wait_for_ip(vm, machine_options, machine_spec, action_handler)
       bootstrap_options = machine_options[:bootstrap_options]
-      vm_ip = ip_to_bootstrap(bootstrap_options, vm)
+      ip_to_bootstrap(bootstrap_options, vm)
       ready_timeout = machine_options[:ready_timeout] || 300
-      msg = "waiting up to #{ready_timeout} seconds for customization"
-      msg << " and find #{vm_ip}" unless vm_ip == vm.guest.ipAddress
+      msg1 = "waiting up to #{ready_timeout} seconds for customization"
+      msg2 = " and find #{@vm_helper.ip}" if @vm_helper.ip? # unless vm_ip == vm.guest.ipAddress # RuntimeError: can't modify frozen String
+      msg = [msg1, msg2].join
       action_handler.report_progress msg
 
       start = Time.now.utc
@@ -652,6 +660,7 @@ module ChefProvisioningVsphere
     end
 
     def wait_for_transport(action_handler, machine_spec, machine_options, vm)
+      @vm_helper.find_port?(vm, machine_options[:bootstrap_options]) if vm_helper.port.nil?
       transport = transport_for(
         machine_spec,
         machine_options[:bootstrap_options][:ssh]
@@ -684,9 +693,9 @@ module ChefProvisioningVsphere
 
     def create_winrm_transport(host, options)
       require 'chef/provisioning/transport/winrm'
-      winrm_transport =
-        options[:winrm_transport].nil? ? :negotiate : options[:winrm_transport].to_sym
-      port = options[:port] || (winrm_transport == :ssl ? '5986' : '5985')
+      winrm_transport ||= :ssl if options[:port] == 5986
+      winrm_transport = options[:winrm_transport].nil? ? :negotiate : options[:winrm_transport].to_sym
+      port = options[:port] || @vm_helper.port # winrm_transport == :ssl ? '5986' : '5985'
       winrm_options = {
         user: (options[:user]).to_s,
         pass: options[:password]
@@ -727,12 +736,18 @@ module ChefProvisioningVsphere
           spec = vsphere_helper.find_customization_spec(bootstrap_options[:customization_spec])
           spec.nicSettingMap[0].adapter.ip.ipAddress
         else
-          bootstrap_options[:customization_spec][:ipsettings][:ip]
+          ## Check if true available
+          @vm_helper.ip = bootstrap_options[:customization_spec][:ipsettings][:ip] unless vm_helper.ip?
+          @vm_helper.find_port?(vm, bootstrap_options) unless vm_helper.port?
+          print '.' until @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
+          @vm_helper.ip.to_s
         end
       else
         if use_ipv4_during_bootstrap?(bootstrap_options)
           wait_for_ipv4(bootstrap_ip_timeout(bootstrap_options), vm)
+          ## Check if true available
         end
+        ## Check if true available and send saved ip
         vm.guest.ipAddress
       end
     end
