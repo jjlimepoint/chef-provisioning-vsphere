@@ -73,14 +73,18 @@ describe 'vsphere_driver' do
                        @vm.config.guestId.start_with?('win') ? @vm_name.byteslice(0, 15) : @vm_name
                      end
       expected_name = "#{trimmed_name}.#{@metal_config[:machine_options][:bootstrap_options][:customization_spec][:domain]}"
-      until (Time.now.utc - now) > 30 || (@vm.guest.hostName == expected_name)
-        print '.'
-        sleep 5
-      end
-      unless @vm.config.guestId.start_with?('win')
-        expect(@vm.guest.hostName).to include(expected_name) #  # For linux
-      else
+      if @vm.config.guestId.start_with?('win')
+        until (Time.now.utc - now) > 30 || expected_name.to_s.include?(@vm.guest.hostName)
+          print '.'
+          sleep 5
+        end
         expect(expected_name).to include(@vm.guest.hostName)
+      else
+        until (Time.now.utc - now) > 30 || (@vm.guest.hostName == expected_name)
+          print '.'
+          sleep 5
+        end
+        expect(@vm.guest.hostName).to eq(expected_name) # For linux Systems
       end
     end
     it 'is on the correct networks' do
