@@ -20,7 +20,6 @@ module ChefProvisioningVsphere
     end
 
     # Create a new Vsphere provisioner.
-    #
     # ## Parameters
     # connect_options - hash of options to be passed to RbVmomi::VIM.connect
     #   :host       - required - hostname of the vSphere API server
@@ -97,7 +96,6 @@ module ChefProvisioningVsphere
     #        fail if different?
     #        node will have node['normal']['provisioner_options'] in it with any options.
     #        It is a hash with this format:
-    #
     #           -- provisioner_url: vsphere://host:port?ssl=[true|false]&insecure=[true|false]
     #           -- bootstrap_options: hash of options to pass to RbVmomi::VIM::VirtualMachine::CloneTask()
     #                :datacenter
@@ -121,7 +119,6 @@ module ChefProvisioningVsphere
     #        node['normal']['provisioner_output'] will be populated with information
     #        about the created machine.  For vSphere, it is a hash with this
     #        format:
-    #
     #           -- provisioner_url: vsphere:host:port?ssl=[true|false]&insecure=[true|false]
     #           -- vm_folder: name of the vSphere folder containing the VM
     #
@@ -312,8 +309,7 @@ module ChefProvisioningVsphere
       begin
         wait_for_transport(action_handler, machine_spec, machine_options, vm)
       rescue Timeout::Error
-        # Only ever reboot once, and only if it's been less than 10 minutes
-        # since we stopped waiting
+        # Only ever reboot once, and only if it's been less than 10 minutes since we stopped waiting
         if machine_spec.location['started_at'] ||
            remaining_wait_time(machine_spec, machine_options) < -(10 * 60)
           raise
