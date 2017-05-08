@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'chef/provisioning/driver'
 
 module ChefProvisioningVsphere
@@ -5,11 +6,11 @@ module ChefProvisioningVsphere
     attr_accessor :ip, :port
 
     RESCUE_EXCEPTIONS_ON_ESTABLISH = [
-        Errno::EACCES, Errno::EADDRINUSE, Errno::ECONNREFUSED, Errno::ETIMEDOUT,
-        Errno::ECONNRESET, Errno::ENETUNREACH, Errno::EHOSTUNREACH, Errno::EPIPE,
-        Errno::EPERM, Errno::EFAULT, Errno::EIO, Errno::EHOSTDOWN,
-        Net::SSH::Disconnect, Net::SSH::AuthenticationFailed, Net::SSH::ConnectionTimeout,
-        Timeout::Error, IPAddr::AddressFamilyError
+      Errno::EACCES, Errno::EADDRINUSE, Errno::ECONNREFUSED, Errno::ETIMEDOUT,
+      Errno::ECONNRESET, Errno::ENETUNREACH, Errno::EHOSTUNREACH, Errno::EPIPE,
+      Errno::EPERM, Errno::EFAULT, Errno::EIO, Errno::EHOSTDOWN,
+      Net::SSH::Disconnect, Net::SSH::AuthenticationFailed, Net::SSH::ConnectionTimeout,
+      Timeout::Error, IPAddr::AddressFamilyError
     ].freeze
 
     def ip?
@@ -26,7 +27,7 @@ module ChefProvisioningVsphere
       if vm.config.guestId.start_with?('win')
         unless customization_spec.nil?
           winrm_transport =
-              customization_spec[:winrm_transport].nil? ? :negotiate : customization_spec[:winrm_transport].to_sym
+            customization_spec[:winrm_transport].nil? ? :negotiate : customization_spec[:winrm_transport].to_sym
         end
         winrm_transport ||= :negotiate
         default_win_port = winrm_transport == :ssl ? '5986' : '5985'
@@ -42,6 +43,5 @@ module ChefProvisioningVsphere
     rescue *RESCUE_EXCEPTIONS_ON_ESTABLISH
       false
     end
-
   end
 end
