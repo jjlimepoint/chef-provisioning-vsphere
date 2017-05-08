@@ -2,6 +2,7 @@
 require 'chef/provisioning/driver'
 
 module ChefProvisioningVsphere
+  # Helps save data in provisioning a machine
   class VmHelper
     attr_accessor :ip, :port
 
