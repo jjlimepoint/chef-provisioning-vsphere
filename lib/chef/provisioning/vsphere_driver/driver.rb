@@ -693,8 +693,11 @@ module ChefProvisioningVsphere
 
     def create_winrm_transport(host, options)
       require 'chef/provisioning/transport/winrm'
-      winrm_transport ||= :ssl if options[:port] == 5986
-      winrm_transport = options[:winrm_transport].nil? ? :negotiate : options[:winrm_transport].to_sym
+      winrm_transport = if options[:port] == 5986
+                          :ssl
+                        else
+                          options[:winrm_transport].nil? ? :negotiate : options[:winrm_transport].to_sym
+                        end
       port = options[:port] || @vm_helper.port # winrm_transport == :ssl ? '5986' : '5985'
       winrm_options = {
         user: (options[:user]).to_s,
@@ -776,12 +779,16 @@ module ChefProvisioningVsphere
       while start_search_ip && (tries += 1) <= max_tries
         print '.'
         sleep sleep_time
-        @vm_helper.ip = vm.guest.ipAddress if vm.guest.guestState == 'running' && vm.guest.toolsRunningStatus == 'guestToolsRunning' && !vm.guest.ipAddress.nil? && IPAddr.new(vm.guest.ipAddress).ipv4?
+        @vm_helper.ip = vm.guest.ipAddress if vm_guest_ip?(vm)
         start_search_ip = false if @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
       end
       raise 'Timed out waiting for ipv4 address!' if tries > max_tries && !IPAddr.new(vm.guest.ipAddress).ipv4?
       puts 'Found ipv4 address!'
       true
+    end
+
+    def vm_guest_ip?(vm)
+      vm.guest.guestState == 'running' && vm.guest.toolsRunningStatus == 'guestToolsRunning' && !vm.guest.ipAddress.nil? && IPAddr.new(vm.guest.ipAddress).ipv4?
     end
   end
 end
