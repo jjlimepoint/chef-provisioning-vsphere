@@ -134,13 +134,15 @@ describe 'vsphere_driver' do
     it 'has hot add memory enabled' do
       expect(@vm.config.memoryHotAddEnabled).to eq(true)
     end
-    it 'has the correct IP address' do
-      now = Time.now.utc
-      until (Time.now.utc - now) > 30 || (@vm.guest.toolsRunningStatus == 'guestToolsRunning' && @vm.guest.net.count == 2 && @vm.guest.net[1].ipAddress[1] == @metal_config[:machine_options][:bootstrap_options][:customization_spec][:ipsettings][:ip])
-        print '.'
-        sleep 5
+    it 'has the correct static IP address' do
+      if @metal_config[:machine_options][:bootstrap_options][:customization_spec][:ipsettings][:ip]
+        now = Time.now.utc
+        until (Time.now.utc - now) > 30 || (@vm.guest.toolsRunningStatus == 'guestToolsRunning' && @vm.guest.net.count == 2 && @vm.guest.net[1].ipAddress[1] == @metal_config[:machine_options][:bootstrap_options][:customization_spec][:ipsettings][:ip])
+          print '.'
+          sleep 5
+        end
+        expect(@vm.guest.net.map(&:ipAddress).flatten).to include(@metal_config[:machine_options][:bootstrap_options][:customization_spec][:ipsettings][:ip])
       end
-      expect(@vm.guest.net.map(&:ipAddress).flatten).to include(@metal_config[:machine_options][:bootstrap_options][:customization_spec][:ipsettings][:ip])
     end
   end
 

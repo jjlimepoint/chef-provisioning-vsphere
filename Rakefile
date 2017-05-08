@@ -17,7 +17,7 @@ end
 
 RSpec::Core::RakeTask.new(:integration) do |task|
   task.pattern = 'spec/integration_tests/*_spec.rb'
-  task.rspec_opts = ['--color', '-f documentation']
+  task.rspec_opts = ['--color', '-f documentation', '--out rspec.txt']
 end
 
 begin
