@@ -731,6 +731,7 @@ module ChefProvisioningVsphere
     end
 
     def ip_to_bootstrap(bootstrap_options, vm)
+      @vm_helper.find_port?(vm, bootstrap_options) unless vm_helper.port?
       if has_static_ip(bootstrap_options)
         if bootstrap_options[:customization_spec].is_a?(String)
           spec = vsphere_helper.find_customization_spec(bootstrap_options[:customization_spec])
@@ -738,17 +739,17 @@ module ChefProvisioningVsphere
         else
           ## Check if true available
           @vm_helper.ip = bootstrap_options[:customization_spec][:ipsettings][:ip] unless vm_helper.ip?
-          @vm_helper.find_port?(vm, bootstrap_options) unless vm_helper.port?
           print '.' until @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
           @vm_helper.ip.to_s
         end
       else
         if use_ipv4_during_bootstrap?(bootstrap_options)
-          wait_for_ipv4(bootstrap_ip_timeout(bootstrap_options), vm)
-          ## Check if true available
+          until @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
+            wait_for_ipv4(bootstrap_ip_timeout(bootstrap_options), vm)
+          end
         end
-        ## Check if true available and send saved ip
-        vm.guest.ipAddress
+        @vm_helper.ip = vm.guest.ipAddress
+        @vm_helper.ip until @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
       end
     end
 
@@ -770,10 +771,13 @@ module ChefProvisioningVsphere
       sleep_time = 5
       print 'Waiting for ipv4 address.'
       tries = 0
+      start_search_ip = true
       max_tries = timeout > sleep_time ? timeout / sleep_time : 1
-      while (vm.guest.ipAddress.nil? || !IPAddr.new(vm.guest.ipAddress).ipv4?) && (tries += 1) <= max_tries
+      while start_search_ip && (tries += 1) <= max_tries
         print '.'
         sleep sleep_time
+        @vm_helper.ip = vm.guest.ipAddress if vm.guest.guestState == 'running' && vm.guest.toolsRunningStatus == 'guestToolsRunning' && !vm.guest.ipAddress.nil? && IPAddr.new(vm.guest.ipAddress).ipv4?
+        start_search_ip = false if @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
       end
       raise 'Timed out waiting for ipv4 address!' if tries > max_tries && !IPAddr.new(vm.guest.ipAddress).ipv4?
       puts 'Found ipv4 address!'
