@@ -261,7 +261,7 @@ module ChefProvisioningVsphere
         bootstrap_options,
         vm
       )
-      if is_windows?(vm) && !new_nics.nil?
+      if is_windows?(vm) && !new_nics.nil? && @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port)
         new_nics.each do |nic|
           nic_label = nic.device.deviceInfo.label
           machine.execute_always(
@@ -747,8 +747,8 @@ module ChefProvisioningVsphere
             wait_for_ipv4(bootstrap_ip_timeout(bootstrap_options), vm)
           end
         end
-        @vm_helper.ip = vm.guest.ipAddress until vm_guest_ip?(vm) # Don't set empty ip
-        @vm_helper.ip until @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
+        @vm_helper.ip = vm.guest.ipAddress until vm_guest_ip?(vm) && @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1) # Don't set empty ip
+        @vm_helper.ip
       end
     end
 
