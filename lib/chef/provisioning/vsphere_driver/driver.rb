@@ -747,7 +747,7 @@ module ChefProvisioningVsphere
             wait_for_ipv4(bootstrap_ip_timeout(bootstrap_options), vm)
           end
         end
-        @vm_helper.ip = vm.guest.ipAddress if vm_guest_ip?(vm) # Don't set empty ip
+        @vm_helper.ip = vm.guest.ipAddress until vm_guest_ip?(vm) # Don't set empty ip
         @vm_helper.ip until @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
       end
     end
