@@ -85,16 +85,16 @@ module ChefProvisioningVsphere
     end
 
     def traverse_folders_for_dc(folder, dcname)
-        children = folder.children.find_all
-        children.each do |child|
-          if child.class == RbVmomi::VIM::Datacenter && child.name == dcname
-            return child
-          elsif child.class == RbVmomi::VIM::Folder
-            dc = traverse_folders_for_dc(child, dcname)
-            return dc if dc
-          end
+      children = folder.children.find_all
+      children.each do |child|
+        if child.class == RbVmomi::VIM::Datacenter && child.name == dcname
+          return child
+        elsif child.class == RbVmomi::VIM::Folder
+          dc = traverse_folders_for_dc(child, dcname)
+          return dc if dc
         end
-        false
+      end
+      false
     end
 
     def datacenter
