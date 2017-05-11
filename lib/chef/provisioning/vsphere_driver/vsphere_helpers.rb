@@ -84,15 +84,24 @@ module ChefProvisioningVsphere
       base
     end
 
+    def traverse_folders_for_dc(folder, dcname)
+        children = folder.children.find_all
+        children.each do |child|
+          if child.class == RbVmomi::VIM::Datacenter && child.name == dcname
+            return child
+          elsif child.class == RbVmomi::VIM::Folder
+            dc = traverse_folders_for_dc(child, dcname)
+            return dc if dc
+          end
+        end
+        false
+    end
+
     def datacenter
       vim # ensure connection is valid
       @datacenter ||= begin
         rootFolder = vim.serviceInstance.content.rootFolder
-        dc = rootFolder.childEntity.grep(RbVmomi::VIM::Datacenter).find do |x|
-          x.name == datacenter_name
-        end
-        raise("vSphere Datacenter not found [#{datacenter_name}]") if dc.nil?
-        dc
+        dc = traverse_folders_for_dc(vim.rootFolder, datacenter_name) || abort('vSphere Datacenter not found [#{datacenter_name}]')
       end
     end
 
