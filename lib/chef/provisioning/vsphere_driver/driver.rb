@@ -389,7 +389,12 @@ module ChefProvisioningVsphere
 
       start = Time.now.utc
       connectable = false
-      until (Time.now.utc - start) > ready_timeout || connectable
+      vm_ip ||= ip_to_bootstrap(bootstrap_options, vm)
+      until transport_for(
+            machine_spec,
+            machine_options[:bootstrap_options][:ssh],
+            vm_ip
+          ).available? || remaining_wait_time(machine_spec, machine_options) < 0
         action_handler.report_progress(
           "IP addresses found: #{all_ips_for(vm)}"
         )
