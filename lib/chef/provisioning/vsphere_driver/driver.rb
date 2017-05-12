@@ -387,20 +387,18 @@ module ChefProvisioningVsphere
       msg = [msg1, msg2].join
       action_handler.report_progress msg
 
-      start = Time.now.utc
-      connectable = false
       vm_ip ||= ip_to_bootstrap(bootstrap_options, vm)
       until transport_for(
-            machine_spec,
-            machine_options[:bootstrap_options][:ssh],
-            vm_ip
-          ).available? || remaining_wait_time(machine_spec, machine_options) < 0
+        machine_spec,
+        machine_options[:bootstrap_options][:ssh],
+        vm_ip
+      ).available? || remaining_wait_time(machine_spec, machine_options) < 0
         action_handler.report_progress(
           "IP addresses found: #{all_ips_for(vm)}"
         )
         vm_ip ||= ip_to_bootstrap(bootstrap_options, vm)
         if has_ip?(vm_ip, vm)
-          connectable = transport_for(
+          transport_for(
             machine_spec,
             machine_options[:bootstrap_options][:ssh],
             vm_ip
