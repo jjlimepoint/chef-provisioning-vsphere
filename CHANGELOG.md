@@ -1,7 +1,7 @@
 # Change Log
 
-## [2.0.1](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.1) (2017-05-13)
-[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.0...2.0.1)
+## [2.0.2](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.2) (2017-05-13)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.0...2.0.2)
 
 **Closed issues:**
 
