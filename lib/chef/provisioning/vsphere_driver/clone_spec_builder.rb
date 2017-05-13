@@ -157,7 +157,7 @@ module ChefProvisioningVsphere
     def hostname_from(options, vm_name)
       hostname = options[:hostname] || vm_name
       test = /^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$/
-      unless hostname.match(test) # rubocop:disable Performance/RegexpMatch
+      unless hostname.match(test)
         raise 'Only letters, numbers or hyphens in hostnames allowed'
       end
       RbVmomi::VIM::CustomizationFixedName.new(name: hostname)
