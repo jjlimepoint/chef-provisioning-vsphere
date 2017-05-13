@@ -1,7 +1,18 @@
 # Change Log
 
-## [2.0.0](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.0) (2017-05-12)
-[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v1.1.2...2.0.0)
+## [2.0.1](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.1) (2017-05-13)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.0...2.0.1)
+
+**Closed issues:**
+
+- datacenter not found error [\#23](https://github.com/chef-partners/chef-provisioning-vsphere/issues/23)
+
+**Merged pull requests:**
+
+- Enable to match regex [\#26](https://github.com/chef-partners/chef-provisioning-vsphere/pull/26) ([jcalonsoh](https://github.com/jcalonsoh))
+
+## [v2.0.0](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.0) (2017-05-12)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v1.1.2...v2.0.0)
 
 **Merged pull requests:**
 
