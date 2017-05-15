@@ -1,20 +1,25 @@
 # frozen_string_literal: true
-require 'chef'
-require 'cheffish/merged_config'
-require 'chef/provisioning/driver'
-require 'chef/provisioning/machine/windows_machine'
-require 'chef/provisioning/machine/unix_machine'
-require 'chef/provisioning/vsphere_driver/clone_spec_builder'
-require 'chef/provisioning/vsphere_driver/version'
-require 'chef/provisioning/vsphere_driver/vsphere_helpers'
-require 'chef/provisioning/vsphere_driver/vsphere_url'
-require 'chef/provisioning/vsphere_driver/vm_helper'
+require "chef"
+require "cheffish/merged_config"
+require "chef/provisioning/driver"
+require "chef/provisioning/machine/windows_machine"
+require "chef/provisioning/machine/unix_machine"
+require "chef/provisioning/vsphere_driver/clone_spec_builder"
+require "chef/provisioning/vsphere_driver/version"
+require "chef/provisioning/vsphere_driver/vsphere_helpers"
+require "chef/provisioning/vsphere_driver/vsphere_url"
+require "chef/provisioning/vsphere_driver/vm_helper"
 
+# Provisions machines in vSphere.
 module ChefProvisioningVsphere
-  # Provisions machines in vSphere.
+  # Inherits the Chef::Provisioning::Driver attirbutes
   class VsphereDriver < Chef::Provisioning::Driver
     include Chef::Mixin::ShellOut
 
+    # Creates the new object via the URL
+    #
+    # @param [String] driver_url The driver url to connect via.
+    # @param [Object] config The config to get to the machine you are creating.
     def self.from_url(driver_url, config)
       VsphereDriver.new(driver_url, config)
     end
@@ -34,6 +39,9 @@ module ChefProvisioningVsphere
       [driver_url || URI::VsphereUrl.from_config(config).to_s, config]
     end
 
+    # Converts the keys from strings to symbols
+    #
+    # @param [Object] h converts to key:value
     def self.symbolize_keys(h)
       Hash === h ?
         Hash[
@@ -43,6 +51,9 @@ module ChefProvisioningVsphere
         ] : h
     end
 
+    # Converts the keys from strings to symbols
+    #
+    # @param [Object] hash_like converts to key:value
     def deep_symbolize(hash_like)
       return {} if hash_like.nil? || hash_like.empty?
       r = {}
@@ -53,17 +64,21 @@ module ChefProvisioningVsphere
       r
     end
 
+    # Initialize method for this class
+    #
+    # @param [String] driver_url Location of where the driver needs to connect to.
+    # @param [Object] config The complete config of the machine options.
     def initialize(driver_url, config)
       super(driver_url, config)
 
       uri = URI(driver_url)
       @connect_options = {
-        provider: 'vsphere',
+        provider: "vsphere",
         host: uri.host,
         port: uri.port,
         use_ssl: uri.use_ssl,
         insecure: uri.insecure,
-        path: uri.path
+        path: uri.path,
       }
 
       if driver_options
@@ -74,6 +89,8 @@ module ChefProvisioningVsphere
 
     attr_reader :connect_options, :vm_helper
 
+    # Creates a new vm_helper if not already there
+    #
     def vm_helper
       @vm_helper ||= ChefProvisioningVsphere::VmHelper.new
     end
@@ -132,13 +149,13 @@ module ChefProvisioningVsphere
         )
         vm = vm_for(machine_spec)
         if vm
-          Chef::Log.warn 'returning existing machine'
+          Chef::Log.warn "returning existing machine"
           return vm
         else
           Chef::Log.warn machine_msg(
             machine_spec.name,
-            machine_spec.location['server_id'],
-            'no longer exists.  Recreating ...'
+            machine_spec.location["server_id"],
+            "no longer exists.  Recreating ..."
           )
         end
       end
@@ -155,11 +172,14 @@ module ChefProvisioningVsphere
       action_handler.performed_action(machine_msg(
                                         machine_spec.name,
                                         vm.config.instanceUuid,
-                                        'created'
+                                        "created"
       ))
       vm
     end
 
+    # Squishes the options to one large hash
+    #
+    # @param [Object] machine_options taken from Chef provisioning for all the `machine_options`
     def merge_options!(machine_options)
       @config = Cheffish::MergedConfig.new(
         { machine_options: machine_options },
@@ -168,17 +188,26 @@ module ChefProvisioningVsphere
       @config = deep_symbolize(@config.to_h)
     end
 
+    # Adds machine spec location from other options.
+    #
+    # @param [Object] machine_spec taken from Chef provisioning for all the `machine_spec`.
+    # @param [Object] vm taken from Chef provisioning for all the vm state.
     def add_machine_spec_location(vm, machine_spec)
       machine_spec.location = {
-        'driver_url' => driver_url,
-        'driver_version' => VERSION,
-        'server_id' => vm.config.instanceUuid,
-        'is_windows' => is_windows?(vm),
-        'allocated_at' => Time.now.utc.to_s,
-        'ipaddress' => vm.guest.ipAddress
+        "driver_url" => driver_url,
+        "driver_version" => VERSION,
+        "server_id" => vm.config.instanceUuid,
+        "is_windows" => is_windows?(vm),
+        "allocated_at" => Time.now.utc.to_s,
+        "ipaddress" => vm.guest.ipAddress,
       }
     end
 
+    # Verify if machine is there or create it.
+    #
+    # @param [Object] bootstrap_options taken from Chef provisioning for all the bootstrap options.
+    # @param [Object] machine_spec taken from Chef provisioning for all the `machine_spec`.
+    # @param [Object] action_handler taken from Chef provisioning for TODO.
     def find_or_create_vm(bootstrap_options, machine_spec, action_handler)
       vm = vsphere_helper.find_vm(
         bootstrap_options[:vm_folder],
@@ -188,7 +217,7 @@ module ChefProvisioningVsphere
         Chef::Log.info machine_msg(
           machine_spec.name,
           vm.config.instanceUuid,
-          'already created'
+          "already created"
         )
       else
         vm = clone_vm(
@@ -200,12 +229,16 @@ module ChefProvisioningVsphere
       vm
     end
 
+    # Creates a full description of the machine.
+    #
+    # @param [Object] bootstrap_options taken from Chef provisioning for all the bootstrap options.
+    # @param [Object] machine_spec taken from Chef provisioning for all the `machine_spec`.
     def full_description(machine_spec, bootstrap_options)
       description = ["creating machine #{machine_spec.name} on #{driver_url}"]
       bootstrap_options.to_hash.each_pair do |key, value|
         if value.is_a?(Hash)
           temp_value = value.clone
-          temp_value[:password] = '*********' if value.key?(:password)
+          temp_value[:password] = "*********" if value.key?(:password)
         else
           temp_value = value
         end
@@ -214,10 +247,21 @@ module ChefProvisioningVsphere
       description
      end
 
+    # Creates a string of specific Machine information
+    #
+    # @param [String] name The name of the machine
+    # @param [String] id The ID of the machine
+    # @param [Object] action TODO
+    # @return [String] "Machine - ACTION - NAME (UUID on URL)"
     def machine_msg(name, id, action)
       "Machine - #{action} - #{name} (#{id} on #{driver_url})"
     end
 
+    # Sets the machine to ready state. (Creates the machine but does not bootstrap Chef into it.)
+    #
+    # @param [Object] action_handler TODO
+    # @param [Object] machine_options taken from Chef provisioning for all the bootstrap options.
+    # @param [Object] machine_spec taken from Chef provisioning for all the `machine_spec`.
     def ready_machine(action_handler, machine_spec, machine_options)
       machine_options = deep_symbolize(machine_options)
       merge_options! machine_options
@@ -225,7 +269,7 @@ module ChefProvisioningVsphere
       vm = start_machine(action_handler, machine_spec, machine_options)
       if vm.nil?
         raise "Machine #{machine_spec.name} does not have a server "\
-        'associated with it, or server does not exist.'
+        "associated with it, or server does not exist."
       end
 
       bootstrap_options = machine_options[:bootstrap_options]
@@ -250,6 +294,12 @@ module ChefProvisioningVsphere
       machine
     end
 
+    # Creates new NICs for the machine
+    #
+    # @param [Object] action_handler TODO
+    # @param [Object] bootstrap_options taken from Chef provisioning for all the bootstrap options.
+    # @param [Object] vm The VM object.
+    # @param [Object] machine The machine object.
     def setup_extra_nics(action_handler, bootstrap_options, vm, machine)
       networks = bootstrap_options[:network_name]
       networks = [networks] if networks.is_a?(String)
@@ -271,6 +321,12 @@ module ChefProvisioningVsphere
       end
     end
 
+    # Is the transport layer ready?
+    #
+    # @param [Object] action_handler TODO
+    # @param [Object] machine_spec taken from Chef provisioning for all the bootstrap options.
+    # @param [Object] vm The VM object.
+    # @param [Object] machine_options The options required to talk to the VM.
     def transport_respond?(
       machine_options,
       vm,
@@ -284,7 +340,7 @@ module ChefProvisioningVsphere
       # Customization below may change this to a valid ip
       wait_until_ready(action_handler, machine_spec, machine_options, vm)
 
-      if !machine_spec.location['ipaddress'] || !has_ip?(machine_spec.location['ipaddress'], vm)
+      if !machine_spec.location["ipaddress"] || !has_ip?(machine_spec.location["ipaddress"], vm)
         # find the ip we actually want
         # this will be the static ip to assign
         # or the ip reported back by the vm if using dhcp
@@ -298,7 +354,7 @@ module ChefProvisioningVsphere
         unless !transport.nil? && transport.available? && has_ip?(vm_ip, vm)
           attempt_ip(machine_options, action_handler, vm, machine_spec)
         end
-        machine_spec.location['ipaddress'] = vm.guest.ipAddress
+        machine_spec.location["ipaddress"] = vm.guest.ipAddress
         action_handler.report_progress(
           "IP address obtained: #{machine_spec.location['ipaddress']}"
         )
@@ -310,14 +366,14 @@ module ChefProvisioningVsphere
         wait_for_transport(action_handler, machine_spec, machine_options, vm)
       rescue Timeout::Error
         # Only ever reboot once, and only if it's been less than 10 minutes since we stopped waiting
-        if machine_spec.location['started_at'] ||
-           remaining_wait_time(machine_spec, machine_options) < -(10 * 60)
+        if machine_spec.location["started_at"] ||
+            remaining_wait_time(machine_spec, machine_options) < -(10 * 60)
           raise
         else
           Chef::Log.warn(machine_msg(
                            machine_spec.name,
                            vm.config.instanceUuid,
-                           'started but SSH did not come up.  Rebooting...'
+                           "started but SSH did not come up.  Rebooting..."
           ))
           restart_server(action_handler, machine_spec, machine_options)
           wait_until_ready(action_handler, machine_spec, machine_options, vm)
@@ -326,19 +382,25 @@ module ChefProvisioningVsphere
       end
     end
 
+    # Test out the IP to connect to.
+    #
+    # @param [Object] action_handler TODO
+    # @param [Object] machine_options taken from Chef provisioning for all the bootstrap options.
+    # @param [Object] vm The VM object.
+    # @param [Object] machine_spec The spec required to talk to the VM.
     def attempt_ip(machine_options, action_handler, vm, machine_spec)
       vm_ip = ip_to_bootstrap(machine_options[:bootstrap_options], vm)
 
       wait_for_ip(vm, machine_options, machine_spec, action_handler)
 
       unless has_ip?(vm_ip, vm)
-        action_handler.report_progress 'rebooting...'
-        if vm.guest.toolsRunningStatus != 'guestToolsRunning'
-          msg = 'tools have stopped. current power state is '
+        action_handler.report_progress "rebooting..."
+        if vm.guest.toolsRunningStatus != "guestToolsRunning"
+          msg = "tools have stopped. current power state is "
           msg << vm.runtime.powerState
-          msg << ' and tools state is '
+          msg << " and tools state is "
           msg << vm.guest.toolsRunningStatus
-          msg << '. powering up server...'
+          msg << ". powering up server..."
           action_handler.report_progress(msg)
           vsphere_helper.start_vm(vm)
         else
@@ -348,6 +410,12 @@ module ChefProvisioningVsphere
       end
     end
 
+    # Wait for the Windows Domain.
+    #
+    # @param [Object] action_handler TODO
+    # @param [Object] bootstrap_options taken from Chef provisioning for all the bootstrap options.
+    # @param [Object] vm The VM object.
+    # @param [Object] machine_spec The specs to connect to bootstrap machine
     def wait_for_domain(bootstrap_options, vm, machine_spec, action_handler)
       return unless bootstrap_options[:customization_spec]
 
@@ -363,7 +431,7 @@ module ChefProvisioningVsphere
 
       return unless domain
 
-      if is_windows?(vm) && domain != 'local'
+      if is_windows?(vm) && domain != "local"
         start = Time.now.utc
         trimmed_name = machine_spec.name.byteslice(0, 15)
         expected_name = "#{trimmed_name}.#{domain}"
@@ -371,13 +439,19 @@ module ChefProvisioningVsphere
           "waiting to domain join and be named #{expected_name}"
         )
         until (Time.now.utc - start) > 30 ||
-              (vm.guest.hostName == expected_name)
-          print '.'
+            (vm.guest.hostName == expected_name)
+          print "."
           sleep 5
         end
       end
     end
 
+    # Wait for another IP allocation.
+    #
+    # @param [Object] action_handler TODO
+    # @param [Object] vm The VM object.
+    # @param [Object] machine_options The machine options required to start the VM.
+    # @param [Object] machine_spec The machine spec required to start the VM.
     def wait_for_ip(vm, machine_options, machine_spec, action_handler)
       bootstrap_options = machine_options[:bootstrap_options]
       ip_to_bootstrap(bootstrap_options, vm)
@@ -408,21 +482,36 @@ module ChefProvisioningVsphere
       end
     end
 
+    # Flatten all IPs for a VM
+    #
+    # @param [Object] vm The VM object.
     def all_ips_for(vm)
       vm.guest.net.map(&:ipAddress).flatten
     end
 
+    # Does the VM have this IP?
+    #
+    # @param [Object] vm The VM object.
+    # @param [String] ip IP to see if it's in the map.
     def has_ip?(ip, vm)
       all_ips_for(vm).include?(ip)
     end
 
     # Connect to machine without acquiring it
+    #
+    # @param [Object] machine_options The machine options required to start the VM.
+    # @param [Object] machine_spec The machine spec required to start the VM.
     def connect_to_machine(machine_spec, machine_options)
       machine_options = deep_symbolize(machine_options)
       merge_options! machine_options
       machine_for(machine_spec, machine_options)
     end
 
+    # Destroy the Machine
+    #
+    # @param [Object] machine_options The machine options required to start the VM.
+    # @param [Object] machine_spec The machine spec required to start the VM.
+    # @param [Object] action_handler TODO
     def destroy_machine(action_handler, machine_spec, machine_options)
       machine_options = deep_symbolize(machine_options)
       merge_options! machine_options
@@ -433,7 +522,7 @@ module ChefProvisioningVsphere
             vsphere_helper.stop_vm(vm, machine_options[:stop_timeout])
             vm.Destroy_Task.wait_for_completion
           rescue RbVmomi::Fault => fault
-            raise fault unless fault.fault.class.wsdl_name == 'ManagedObjectNotFound'
+            raise fault unless fault.fault.class.wsdl_name == "ManagedObjectNotFound"
           ensure
             machine_spec.location = nil
           end
@@ -443,6 +532,11 @@ module ChefProvisioningVsphere
       strategy.cleanup_convergence(action_handler, machine_spec)
     end
 
+    # Stop the Machine
+    #
+    # @param [Object] machine_options The machine options required to start the VM.
+    # @param [Object] machine_spec The machine spec required to start the VM.
+    # @param [Object] action_handler TODO
     def stop_machine(action_handler, machine_spec, machine_options)
       machine_options = deep_symbolize(machine_options)
       merge_options! machine_options
@@ -454,6 +548,11 @@ module ChefProvisioningVsphere
       end
     end
 
+    # Start the Machine
+    #
+    # @param [Object] machine_options The machine options required to start the VM.
+    # @param [Object] machine_spec The machine spec required to start the VM.
+    # @param [Object] action_handler TODO
     def start_machine(action_handler, machine_spec, machine_options)
       machine_options = deep_symbolize(machine_options)
       merge_options! machine_options
@@ -466,40 +565,53 @@ module ChefProvisioningVsphere
       vm
     end
 
+    # Restart the Machine
+    #
+    # @param [Object] machine_options The machine options required to start the VM.
+    # @param [Object] machine_spec The machine spec required to start the VM.
+    # @param [Object] action_handler TODO
     def restart_server(action_handler, machine_spec, machine_options)
       action_handler.perform_action "restart machine #{machine_spec.name} (#{driver_url})" do
         stop_machine(action_handler, machine_spec, machine_options)
         start_machine(action_handler, machine_spec, machine_options)
-        machine_spec.location['started_at'] = Time.now.utc.to_s
+        machine_spec.location["started_at"] = Time.now.utc.to_s
       end
     end
 
     protected
 
+    # Ubuntu requires some...hacking to get DNS to work.
+    #
+    # @param [Object] bootstrap_options The bootstarp options required to start the VM.
+    # @param [Object] _machine_spec The machine spec required to start the VM.
+    # @param [Object] machine Machine object to connect to.
     def setup_ubuntu_dns(machine, bootstrap_options, _machine_spec)
-      host_lookup = machine.execute_always('host google.com')
+      host_lookup = machine.execute_always("host google.com")
       if host_lookup.exitstatus != 0
-        if host_lookup.stdout.include?('setlocale: LC_ALL')
-          machine.execute_always('locale-gen en_US && update-locale LANG=en_US')
+        if host_lookup.stdout.include?("setlocale: LC_ALL")
+          machine.execute_always("locale-gen en_US && update-locale LANG=en_US")
         end
         distro = machine.execute_always("lsb_release -i | sed -e 's/Distributor ID://g'").stdout.strip
         Chef::Log.info "Found distro:#{distro}"
-        if distro == 'Ubuntu'
-          distro_version = machine.execute_always('lsb_release -r | sed -e s/[^0-9.]//g').stdout.strip.to_f
+        if distro == "Ubuntu"
+          distro_version = machine.execute_always("lsb_release -r | sed -e s/[^0-9.]//g").stdout.strip.to_f
           Chef::Log.info "Found distro version:#{distro_version}"
           if distro_version >= 12.04
-            Chef::Log.info 'Ubuntu version 12.04 or greater. Need to patch DNS.'
-            interfaces_file = '/etc/network/interfaces'
-            nameservers = bootstrap_options[:customization_spec][:ipsettings][:dnsServerList].join(' ')
+            Chef::Log.info "Ubuntu version 12.04 or greater. Need to patch DNS."
+            interfaces_file = "/etc/network/interfaces"
+            nameservers = bootstrap_options[:customization_spec][:ipsettings][:dnsServerList].join(" ")
             machine.execute_always("if ! cat #{interfaces_file} | grep -q dns-search ; then echo 'dns-search #{bootstrap_options[:customization_spec][:domain]}' >> #{interfaces_file} ; fi")
             machine.execute_always("if ! cat #{interfaces_file} | grep -q dns-nameservers ; then echo 'dns-nameservers #{nameservers}' >> #{interfaces_file} ; fi")
-            machine.execute_always('/etc/init.d/networking restart')
-            machine.execute_always('apt-get -qq update')
+            machine.execute_always("/etc/init.d/networking restart")
+            machine.execute_always("apt-get -qq update")
           end
         end
       end
     end
 
+    # Verify static IP.
+    #
+    # @param [Object] bootstrap_options The bootstarp options required to start the VM.
     def has_static_ip(bootstrap_options)
       if bootstrap_options.key?(:customization_spec)
         bootstrap_options = bootstrap_options[:customization_spec]
@@ -516,22 +628,22 @@ module ChefProvisioningVsphere
     end
 
     def remaining_wait_time(machine_spec, machine_options)
-      if machine_spec.location['started_at']
+      if machine_spec.location["started_at"]
         (machine_options[:start_timeout] || 600) -
-          (Time.now.utc - Time.parse(machine_spec.location['started_at']))
+          (Time.now.utc - Time.parse(machine_spec.location["started_at"]))
       else
         (machine_options[:create_timeout] || 600) -
-          (Time.now.utc - Time.parse(machine_spec.location['allocated_at']))
+          (Time.now.utc - Time.parse(machine_spec.location["allocated_at"]))
       end
     end
 
     def wait_until_ready(action_handler, machine_spec, machine_options, vm)
-      if vm.guest.toolsRunningStatus != 'guestToolsRunning'
+      if vm.guest.toolsRunningStatus != "guestToolsRunning"
         if action_handler.should_perform_actions
           action_handler.report_progress "waiting for #{machine_spec.name} (#{vm.config.instanceUuid} on #{driver_url}) to be ready ..."
           until remaining_wait_time(machine_spec, machine_options) < 0 ||
-                (vm.guest.toolsRunningStatus == 'guestToolsRunning' && vm.guest.ipAddress && !vm.guest.ipAddress.empty?)
-            print '.'
+              (vm.guest.toolsRunningStatus == "guestToolsRunning" && vm.guest.ipAddress && !vm.guest.ipAddress.empty?)
+            print "."
             sleep 5
           end
           action_handler.report_progress "#{machine_spec.name} is now ready"
@@ -541,7 +653,7 @@ module ChefProvisioningVsphere
 
     def vm_for(machine_spec)
       if machine_spec.location
-        vsphere_helper.find_vm_by_id(machine_spec.location['server_id'])
+        vsphere_helper.find_vm_by_id(machine_spec.location["server_id"])
       end
     end
 
@@ -570,7 +682,7 @@ module ChefProvisioningVsphere
         size = size.to_i
         next if size == 0
         if bootstrap_options[:datastore].to_s.empty?
-          raise ':datastore must be specified when adding a disk to a cloned vm'
+          raise ":datastore must be specified when adding a disk to a cloned vm"
         end
         task = vm.ReconfigVM_Task(
           spec: RbVmomi::VIM.VirtualMachineConfigSpec(
@@ -579,7 +691,7 @@ module ChefProvisioningVsphere
                 vm,
                 bootstrap_options[:datastore],
                 size
-              )
+              ),
             ]
           )
         )
@@ -614,7 +726,7 @@ module ChefProvisioningVsphere
       )
       strategy = convergence_strategy_for(machine_spec, machine_options)
 
-      if machine_spec.location['is_windows']
+      if machine_spec.location["is_windows"]
         Chef::Provisioning::Machine::WindowsMachine.new(
           machine_spec, transport, strategy
         )
@@ -627,13 +739,13 @@ module ChefProvisioningVsphere
 
     def is_windows?(vm)
       return false if vm.nil?
-      vm.config.guestId.start_with?('win')
+      vm.config.guestId.start_with?("win")
     end
 
     def convergence_strategy_for(machine_spec, machine_options)
-      require 'chef/provisioning/convergence_strategy/install_msi'
-      require 'chef/provisioning/convergence_strategy/install_cached'
-      require 'chef/provisioning/convergence_strategy/no_converge'
+      require "chef/provisioning/convergence_strategy/install_msi"
+      require "chef/provisioning/convergence_strategy/install_cached"
+      require "chef/provisioning/convergence_strategy/no_converge"
 
       mopts = machine_options[:convergence_options].to_hash.dup
       if mopts[:chef_server]
@@ -647,7 +759,7 @@ module ChefProvisioningVsphere
         )
       end
 
-      if machine_spec.location['is_windows']
+      if machine_spec.location["is_windows"]
         Chef::Provisioning::ConvergenceStrategy::InstallMsi.new(
           mopts, config
         )
@@ -658,6 +770,12 @@ module ChefProvisioningVsphere
       end
     end
 
+    # Wait for the transport connection to happen
+    #
+    # @param [Object] machine_spec The machine_spec from Chef-Provisioning
+    # @param [Object] machine_options Options for remote connections
+    # @param [Object] vm The VM object from Chef-Provisioning
+    # @param [Object] action_handler taken from Chef provisioning for TODO.
     def wait_for_transport(action_handler, machine_spec, machine_options, vm)
       @vm_helper.find_port?(vm, machine_options[:bootstrap_options]) if vm_helper.port.nil?
       transport = transport_for(
@@ -669,7 +787,7 @@ module ChefProvisioningVsphere
           action_handler.report_progress "waiting for #{machine_spec.name} (#{vm.config.instanceUuid} on #{driver_url}) to be connectable (transport up and running) ..."
 
           until remaining_wait_time(machine_spec, machine_options) < 0 || transport.available?
-            print '.'
+            print "."
             sleep 5
           end
 
@@ -678,29 +796,38 @@ module ChefProvisioningVsphere
       end
     end
 
+    # Figure out the transport system to send to the VM
+    #
+    # @param [Object] machine_spec The machine_spec from Chef-Provisioning
+    # @param [Object] remoting_options Options for remote connections
+    # @param [String] ip The IP to connect to.
     def transport_for(
       machine_spec,
       remoting_options,
-      ip = machine_spec.location['ipaddress']
+      ip = machine_spec.location["ipaddress"]
     )
-      if machine_spec.location['is_windows']
+      if machine_spec.location["is_windows"]
         create_winrm_transport(ip, remoting_options)
       else
         create_ssh_transport(ip, remoting_options)
       end
     end
 
+    # Create a robust WinRM transport connect, so so many options to make a simple connection
+    #
+    # @param [String] host The host the VM is connecting to
+    # @param [Object] options Options that are required to connect to the host from Chef-Provisioning
     def create_winrm_transport(host, options)
-      require 'chef/provisioning/transport/winrm'
+      require "chef/provisioning/transport/winrm"
       winrm_transport = if options[:port] == 5986
                           :ssl
                         else
                           options[:winrm_transport].nil? ? :negotiate : options[:winrm_transport].to_sym
                         end
-      port = options[:port] || @vm_helper.port # winrm_transport == :ssl ? '5986' : '5985'
+      port = options[:port] || @vm_helper.port
       winrm_options = {
         user: (options[:user]).to_s,
-        pass: options[:password]
+        pass: options[:password],
       }
       if options[:winrm_opts].nil?
         opt = options[:user].include?('\\') ? :disable_sspi : :basic_auth_only
@@ -719,19 +846,27 @@ module ChefProvisioningVsphere
       )
     end
 
+    # Find the IP to bootstrap against
+    #
+    # @param [String] host The host the VM is connecting to
+    # @param [Object] options Options that are required to connect to the host from Chef-Provisioning
     def create_ssh_transport(host, options)
-      require 'chef/provisioning/transport/ssh'
+      require "chef/provisioning/transport/ssh"
       ssh_user = options[:user]
       options = options.each_with_object({}) { |(k, v), memo| memo[k.to_sym] = v; }
       Chef::Provisioning::Transport::SSH.new(
         host,
         ssh_user,
         options.to_hash,
-        @config[:machine_options][:sudo] ? { prefix: 'sudo ' } : {},
+        @config[:machine_options][:sudo] ? { prefix: "sudo " } : {},
         config
       )
     end
 
+    # Find the IP to bootstrap against
+    #
+    # @param [Object] bootstrap_options The bootstrap options from Chef-Provisioning
+    # @param [Object] vm The VM object from Chef-Provisioning
     def ip_to_bootstrap(bootstrap_options, vm)
       @vm_helper.find_port?(vm, bootstrap_options) unless vm_helper.port?
       if has_static_ip(bootstrap_options)
@@ -741,7 +876,7 @@ module ChefProvisioningVsphere
         else
           ## Check if true available
           @vm_helper.ip = bootstrap_options[:customization_spec][:ipsettings][:ip] unless vm_helper.ip?
-          print '.' until @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
+          print "." until @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
           @vm_helper.ip.to_s
         end
       else
@@ -755,6 +890,9 @@ module ChefProvisioningVsphere
       end
     end
 
+    # Force IPv4 a bootstrap, default: false
+    #
+    # @param [Object] bootstrap_options The bootstrap options from Chef-Provisioning
     def use_ipv4_during_bootstrap?(bootstrap_options)
       if bootstrap_options.key?(:bootstrap_ipv4)
         return bootstrap_options[:bootstrap_ipv4] == true
@@ -762,6 +900,9 @@ module ChefProvisioningVsphere
       false
     end
 
+    # Setting a bootstrap ip timeout, default: 30
+    #
+    # @param [Object] bootstrap_options The bootstrap options from Chef-Provisioning
     def bootstrap_ip_timeout(bootstrap_options)
       if bootstrap_options.key?(:ipv4_timeout)
         return bootstrap_options[:ipv4_timeout].to_i
@@ -769,25 +910,32 @@ module ChefProvisioningVsphere
       30
     end
 
+    # What for IPv4 address
+    #
+    # @param [String] timeout Declared a timeout
+    # @param [Object] vm The VM object from Chef-Provisioning
     def wait_for_ipv4(timeout, vm)
       sleep_time = 5
-      print 'Waiting for ipv4 address.'
+      print "Waiting for ipv4 address."
       tries = 0
       start_search_ip = true
       max_tries = timeout > sleep_time ? timeout / sleep_time : 1
       while start_search_ip && (tries += 1) <= max_tries
-        print '.'
+        print "."
         sleep sleep_time
         @vm_helper.ip = vm.guest.ipAddress if vm_guest_ip?(vm)
         start_search_ip = false if @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
       end
-      raise 'Timed out waiting for ipv4 address!' if tries > max_tries && !IPAddr.new(vm.guest.ipAddress).ipv4?
-      puts 'Found ipv4 address!'
+      raise "Timed out waiting for ipv4 address!" if tries > max_tries && !IPAddr.new(vm.guest.ipAddress).ipv4?
+      puts "Found ipv4 address!"
       true
     end
 
+    # What is the VM guest IP
+    #
+    # @param [Object] vm The VM object from Chef-Provisioning
     def vm_guest_ip?(vm)
-      vm.guest.guestState == 'running' && vm.guest.toolsRunningStatus == 'guestToolsRunning' && !vm.guest.ipAddress.nil? && IPAddr.new(vm.guest.ipAddress).ipv4?
+      vm.guest.guestState == "running" && vm.guest.toolsRunningStatus == "guestToolsRunning" && !vm.guest.ipAddress.nil? && IPAddr.new(vm.guest.ipAddress).ipv4?
     end
   end
 end
