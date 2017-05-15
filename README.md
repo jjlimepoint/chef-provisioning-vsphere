@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/chef-partners/chef-provisioning-vsphere.png?label=ready&title=Ready)](https://waffle.io/chef-partners/chef-provisioning-vsphere?utm_source=badge)
 # chef-provisioning-vsphere
 
 [![Gem Version](https://img.shields.io/gem/v/chef-provisioning-vsphere.svg)][gem]
