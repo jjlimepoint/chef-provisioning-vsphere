@@ -354,7 +354,7 @@ module ChefProvisioningVsphere
         unless !transport.nil? && transport.available? && has_ip?(vm_ip, vm)
           attempt_ip(machine_options, action_handler, vm, machine_spec)
         end
-        machine_spec.location['ipaddress'] = vm_ip # vm.guest.ipAddress vmWare ip_address here can be 0.0.0.0
+        machine_spec.location["ipaddress"] = vm_ip # vm.guest.ipAddress vmWare ip_address here can be 0.0.0.0
         action_handler.report_progress(
           "IP address obtained: #{machine_spec.location['ipaddress']}"
         )
