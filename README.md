@@ -2,6 +2,8 @@
 
 [![Gem Version](https://img.shields.io/gem/v/chef-provisioning-vsphere.svg)][gem]
 [![Build Status](https://travis-ci.org/chef-partners/chef-provisioning-vsphere.svg?branch=master)][travis]
+[![Inline docs](http://inch-ci.org/github/chef-partners/chef-provisioning-vsphere.svg?branch=master)](http://inch-ci.org/github/chef-partners/chef-provisioning-vsphere)
+[![Stories in Ready](https://badge.waffle.io/chef-partners/chef-provisioning-vsphere.png?label=ready&title=Ready)](https://waffle.io/chef-partners/chef-provisioning-vsphere?utm_source=badge)
 
 This is a [chef-provisioning](https://github.com/chef/chef-provisioning) provisioner for [VMware vSphere](http://www.vmware.com/products/vsphere).
 
@@ -321,7 +323,7 @@ platforms:
             - 10
             - 10
             - 10
-            
+
 suites:
   - name: default
     runlist:
@@ -345,6 +347,8 @@ You can run then `kitchen diagnose` to verify the nodes and settings that will b
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+We have attempted to `TODO` markings. If you find one, whether it's documentation or a feature, it's a great place to start helping out. `$ grep -r "TODO" lib/`
 
 [gem]: https://rubygems.org/gems/chef-provisioning-vsphere
 [travis]: https://travis-ci.org/chef-partners/chef-provisioning-vsphere

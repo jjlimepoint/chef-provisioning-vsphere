@@ -5,6 +5,13 @@ branches:
     - master
 rvm:
   - 2.3.3
+  - 2.4.1
+
 script:
   - bundle exec rake style
   - bundle exec rake unit
+  - bundle exec rake yard
+
+matrix:
+  allow_failures:
+  - rvm: 2.3.3

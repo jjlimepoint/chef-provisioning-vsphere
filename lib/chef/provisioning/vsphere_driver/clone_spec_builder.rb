@@ -1,5 +1,8 @@
 # frozen_string_literal: true
+
+# Provisions machines in vSphere.
 module ChefProvisioningVsphere
+  # Creates a cspec for VMware
   class CloneSpecBuilder
     def initialize(vsphere_helper, action_handler)
       @vsphere_helper = vsphere_helper
@@ -9,6 +12,11 @@ module ChefProvisioningVsphere
     attr_reader :vsphere_helper
     attr_reader :action_handler
 
+    # The main build method.
+    #
+    # @param [String] options Options set from Chef-Provisioning.
+    # @param [String] vm_template The VM template to clone from.
+    # @param [String] vm_name The VM name to create.
     def build(vm_template, vm_name, options)
       clone_spec = RbVmomi::VIM.VirtualMachineCloneSpec(
         location: relocate_spec_for(vm_template, options),
@@ -52,6 +60,10 @@ module ChefProvisioningVsphere
       clone_spec
     end
 
+    # Figure out or declare where you need to bootstrap the vm
+    #
+    # @param [String] options Options set from Chef-Provisioning.
+    # @param [String] vm_template The VM template to clone from.
     def relocate_spec_for(vm_template, options)
       rspec = RbVmomi::VIM.VirtualMachineRelocateSpec
       host = nil
@@ -66,12 +78,12 @@ module ChefProvisioningVsphere
       elsif vm_template.config.template && !host.nil?
         rspec.pool = host.parent.resourcePool # assign to the "invisible" pool root
       elsif vm_template.config.template
-        raise 'either :host or :resource_pool must be specified when cloning from a VM Template'
+        raise "either :host or :resource_pool must be specified when cloning from a VM Template"
       end
 
       if options[:use_linked_clone]
         if vm_template.config.template
-          Chef::Log.warn('Using a VM Template, ignoring use_linked_clone.')
+          Chef::Log.warn("Using a VM Template, ignoring use_linked_clone.")
         else
           vsphere_helper.create_delta_disk(vm_template)
           rspec.diskMoveType = :moveChildMostDiskBacking
@@ -85,19 +97,24 @@ module ChefProvisioningVsphere
       rspec
     end
 
+    # Verify and create all the options needed for Customization Specs
+    #
+    # @param [String] options Options set from Chef-Provisioning.
+    # @param [String] vm_name The VM name that is set.
+    # @param [String] vm_template The VM template to clone from.
     def customization_options_from(vm_template, vm_name, options)
       if options.key?(:customization_spec)
         if options[:customization_spec].is_a?(Hash) ||
-           options[:customization_spec].is_a?(Cheffish::MergedConfig)
+            options[:customization_spec].is_a?(Cheffish::MergedConfig)
           cust_options = options[:customization_spec]
           ip_settings = cust_options[:ipsettings]
           cust_domain = cust_options[:domain]
 
-          raise ArgumentError, 'domain is required' unless cust_domain
+          raise ArgumentError, "domain is required" unless cust_domain
           cust_ip_settings = nil
           if ip_settings && ip_settings.key?(:ip)
             unless cust_options[:ipsettings].key?(:subnetMask)
-              raise ArgumentError, 'subnetMask is required for static ip'
+              raise ArgumentError, "subnetMask is required for static ip"
             end
             cust_ip_settings = RbVmomi::VIM::CustomizationIPSettings.new(
               ip_settings
@@ -128,7 +145,7 @@ module ChefProvisioningVsphere
           cust_hwclockutc = cust_options[:hw_clock_utc]
           cust_timezone = cust_options[:time_zone]
 
-          cust_prep = if vm_template.config.guestId.start_with?('win')
+          cust_prep = if vm_template.config.guestId.start_with?("win")
                         windows_prep_for(options, vm_name)
                       else
                         RbVmomi::VIM::CustomizationLinuxPrep.new(
@@ -141,7 +158,7 @@ module ChefProvisioningVsphere
           cust_adapter_mapping = [
             RbVmomi::VIM::CustomizationAdapterMapping.new(
               adapter: cust_ip_settings
-            )
+            ),
           ]
           RbVmomi::VIM::CustomizationSpec.new(
             identity: cust_prep,
@@ -154,15 +171,23 @@ module ChefProvisioningVsphere
       end
     end
 
+    # Creates a hostname, and verifies that it fulfills the requirements
+    #
+    # @param [String] options Options set from Chef-Provisioning.
+    # @param [String] vm_name The VM name that is set.
     def hostname_from(options, vm_name)
       hostname = options[:hostname] || vm_name
       test = /^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$/
-      unless hostname.match(test)
-        raise 'Only letters, numbers or hyphens in hostnames allowed'
+      unless hostname =~ test
+        raise "Only letters, numbers or hyphens in hostnames allowed"
       end
       RbVmomi::VIM::CustomizationFixedName.new(name: hostname)
     end
 
+    # Preparation work for windows, sysprep and the like.
+    #
+    # @param [String] options Options set from Chef-Provisioning.
+    # @param [String] vm_name The VM name that is set.
     def windows_prep_for(options, vm_name)
       cust_options = options[:customization_spec]
       unless cust_options[:run_once].nil?
@@ -175,22 +200,21 @@ module ChefProvisioningVsphere
         plainText: true,
         value: options[:ssh][:password]
       )
-      if cust_options.key?(:domain) && (cust_options[:domain] != 'local')
+      if cust_options.key?(:domain) && (cust_options[:domain] != "local")
         cust_domain_password = RbVmomi::VIM::CustomizationPassword(
           plainText: true,
-          value: ENV['domainAdminPassword'] || cust_options[:domainAdminPassword]
+          value: ENV["domainAdminPassword"] || cust_options[:domainAdminPassword]
         )
         cust_id = RbVmomi::VIM::CustomizationIdentification.new(
           joinDomain: cust_options[:domain],
           domainAdmin: cust_options[:domainAdmin],
           domainAdminPassword: cust_domain_password
         )
-        # puts "my env passwd is: #{ENV['domainAdminPassword']}"
         action_handler.report_progress "joining domain #{cust_options[:domain]} /
           with user: #{cust_options[:domainAdmin]}"
       else
         cust_id = RbVmomi::VIM::CustomizationIdentification.new(
-          joinWorkgroup: 'WORKGROUP'
+          joinWorkgroup: "WORKGROUP"
         )
       end
       cust_gui_unattended = RbVmomi::VIM::CustomizationGuiUnattended.new(

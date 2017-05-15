@@ -1,4 +1,6 @@
 # frozen_string_literal: false
+# Provisions machines in vSphere.
 module ChefProvisioningVsphere
-  VERSION = '2.0.2'.freeze
+  # The version of this awesome Gem. BOOM.
+  VERSION = "2.0.2".freeze
 end
