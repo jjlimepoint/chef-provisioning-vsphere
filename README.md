@@ -1,8 +1,9 @@
-[![Stories in Ready](https://badge.waffle.io/chef-partners/chef-provisioning-vsphere.png?label=ready&title=Ready)](https://waffle.io/chef-partners/chef-provisioning-vsphere?utm_source=badge)
 # chef-provisioning-vsphere
 
 [![Gem Version](https://img.shields.io/gem/v/chef-provisioning-vsphere.svg)][gem]
 [![Build Status](https://travis-ci.org/chef-partners/chef-provisioning-vsphere.svg?branch=master)][travis]
+
+[![Stories in Ready](https://badge.waffle.io/chef-partners/chef-provisioning-vsphere.png?label=ready&title=Ready)](https://waffle.io/chef-partners/chef-provisioning-vsphere?utm_source=badge)
 
 This is a [chef-provisioning](https://github.com/chef/chef-provisioning) provisioner for [VMware vSphere](http://www.vmware.com/products/vsphere).
 
