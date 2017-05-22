@@ -37,7 +37,7 @@ module ChefProvisioningVsphere
       @port = options[:ssh][:port]
       customization_spec = options[:customization_spec]
       if vm.config.guestId.start_with?("win")
-        unless customization_spec.nil? && customization_spec.is_a?(Hash)
+        if customization_spec.is_a?(Hash)
           winrm_transport =
             customization_spec[:winrm_transport].nil? ? :negotiate : customization_spec[:winrm_transport].to_sym
         end

@@ -354,7 +354,7 @@ module ChefProvisioningVsphere
         unless !transport.nil? && transport.available? && has_ip?(vm_ip, vm)
           attempt_ip(machine_options, action_handler, vm, machine_spec)
         end
-        machine_spec.location["ipaddress"] = vm.guest.ipAddress
+        machine_spec.location["ipaddress"] = vm_ip # vm.guest.ipAddress vmWare ip_address here can be 0.0.0.0
         action_handler.report_progress(
           "IP address obtained: #{machine_spec.location['ipaddress']}"
         )
@@ -461,7 +461,7 @@ module ChefProvisioningVsphere
       msg = [msg1, msg2].join
       action_handler.report_progress msg
 
-      vm_ip ||= ip_to_bootstrap(bootstrap_options, vm)
+      vm_ip = @vm_helper.ip || ip_to_bootstrap(bootstrap_options, vm)
       until transport_for(
         machine_spec,
         machine_options[:bootstrap_options][:ssh],
@@ -470,7 +470,7 @@ module ChefProvisioningVsphere
         action_handler.report_progress(
           "IP addresses found: #{all_ips_for(vm)}"
         )
-        vm_ip ||= ip_to_bootstrap(bootstrap_options, vm)
+        vm_ip = @vm_helper.ip || ip_to_bootstrap(bootstrap_options, vm)
         if has_ip?(vm_ip, vm)
           transport_for(
             machine_spec,
@@ -872,12 +872,11 @@ module ChefProvisioningVsphere
       if has_static_ip(bootstrap_options)
         if bootstrap_options[:customization_spec].is_a?(String)
           spec = vsphere_helper.find_customization_spec(bootstrap_options[:customization_spec])
-          spec.nicSettingMap[0].adapter.ip.ipAddress
+          @vm_helper.ip = spec.nicSettingMap[0].adapter.ip.ipAddress
         else
           ## Check if true available
           @vm_helper.ip = bootstrap_options[:customization_spec][:ipsettings][:ip] unless vm_helper.ip?
           print "." until @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
-          @vm_helper.ip.to_s
         end
       else
         if use_ipv4_during_bootstrap?(bootstrap_options)
@@ -886,8 +885,8 @@ module ChefProvisioningVsphere
           end
         end
         @vm_helper.ip = vm.guest.ipAddress until vm_guest_ip?(vm) && @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1) # Don't set empty ip
-        @vm_helper.ip
       end
+      @vm_helper.ip.to_s
     end
 
     # Force IPv4 a bootstrap, default: false
