@@ -872,7 +872,7 @@ module ChefProvisioningVsphere
       if has_static_ip(bootstrap_options)
         if bootstrap_options[:customization_spec].is_a?(String)
           spec = vsphere_helper.find_customization_spec(bootstrap_options[:customization_spec])
-          @vm_helper.ip= spec.nicSettingMap[0].adapter.ip.ipAddress
+          @vm_helper.ip = spec.nicSettingMap[0].adapter.ip.ipAddress
         else
           ## Check if true available
           @vm_helper.ip = bootstrap_options[:customization_spec][:ipsettings][:ip] unless vm_helper.ip?
