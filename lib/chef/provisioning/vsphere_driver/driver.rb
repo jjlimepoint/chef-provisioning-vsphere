@@ -345,7 +345,7 @@ module ChefProvisioningVsphere
         # this will be the static ip to assign
         # or the ip reported back by the vm if using dhcp
         # it *may* be nil if just cloned
-        vm_ip = ip_to_bootstrap(bootstrap_options, vm)
+        vm_ip = ip_to_bootstrap(bootstrap_options, vm) || @vm_helper.ip
         transport = nil
         unless vm_ip.nil?
           transport = transport_for(machine_spec, bootstrap_options[:ssh], vm_ip)
@@ -461,7 +461,7 @@ module ChefProvisioningVsphere
       msg = [msg1, msg2].join
       action_handler.report_progress msg
 
-      vm_ip = @vm_helper.ip || ip_to_bootstrap(bootstrap_options, vm)
+      vm_ip = ip_to_bootstrap(bootstrap_options, vm) || @vm_helper.ip
       until transport_for(
         machine_spec,
         machine_options[:bootstrap_options][:ssh],
