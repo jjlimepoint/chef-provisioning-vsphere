@@ -1,7 +1,22 @@
 # Change Log
 
-## [2.0.2](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.2) (2017-05-13)
-[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.0...2.0.2)
+## [2.0.3](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.3) (2017-05-22)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.2...2.0.3)
+
+**Closed issues:**
+
+- Patch on transport\_respond? [\#31](https://github.com/chef-partners/chef-provisioning-vsphere/issues/31)
+- Github Templates [\#28](https://github.com/chef-partners/chef-provisioning-vsphere/issues/28)
+
+**Merged pull requests:**
+
+- Patch on transport\_respond? [\#32](https://github.com/chef-partners/chef-provisioning-vsphere/pull/32) ([jcalonsoh](https://github.com/jcalonsoh))
+- Added github templates [\#30](https://github.com/chef-partners/chef-provisioning-vsphere/pull/30) ([jjasghar](https://github.com/jjasghar))
+- waffle.io Badge [\#29](https://github.com/chef-partners/chef-provisioning-vsphere/pull/29) ([waffle-iron](https://github.com/waffle-iron))
+- Time to do doc all the things! [\#27](https://github.com/chef-partners/chef-provisioning-vsphere/pull/27) ([jjasghar](https://github.com/jjasghar))
+
+## [v2.0.2](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.2) (2017-05-13)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.0...v2.0.2)
 
 **Closed issues:**
 
