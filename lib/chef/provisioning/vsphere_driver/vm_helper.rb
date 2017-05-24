@@ -57,6 +57,7 @@ module ChefProvisioningVsphere
     # @param [Integer] timeout The number of seconds before timeout.
     # @return [true] Returns true when the socket is available to connect.
     def open_port?(host, port, timeout = 5)
+      return false if host.to_s.empty?
       true if ::Socket.tcp(host, port, connect_timeout: timeout)
     rescue *RESCUE_EXCEPTIONS_ON_ESTABLISH
       false
