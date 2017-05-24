@@ -925,7 +925,7 @@ module ChefProvisioningVsphere
         @vm_helper.ip = vm.guest.ipAddress if vm_guest_ip?(vm)
         start_search_ip = false if @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
       end
-      raise "Timed out waiting for ipv4 address!" if tries > max_tries && !IPAddr.new(vm.guest.ipAddress).ipv4?
+      raise "Timed out waiting for ipv4 address!" if tries > max_tries
       puts "Found ipv4 address!"
       true
     end
