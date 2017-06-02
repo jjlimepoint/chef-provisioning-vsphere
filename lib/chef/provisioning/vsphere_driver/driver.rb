@@ -283,14 +283,14 @@ module ChefProvisioningVsphere
 
       machine = machine_for(machine_spec, machine_options)
 
-      setup_extra_nics(action_handler, bootstrap_options, vm, machine)
+      setup_extra_nics(action_handler, bootstrap_options, vm, machine, machine_spec)
 
       if has_static_ip(bootstrap_options) && !is_windows?(vm)
         setup_ubuntu_dns(machine, bootstrap_options, machine_spec)
       end
 
       ## Check if true available after added nic
-      @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port) unless @vm_helper.ip.nil?
+      @vm_helper.open_port?(machine_spec.location['ipaddress'], @vm_helper.port) unless machine_spec.location['ipaddress'].nil?
       machine
     end
 
@@ -300,7 +300,7 @@ module ChefProvisioningVsphere
     # @param [Object] bootstrap_options taken from Chef provisioning for all the bootstrap options.
     # @param [Object] vm The VM object.
     # @param [Object] machine The machine object.
-    def setup_extra_nics(action_handler, bootstrap_options, vm, machine)
+    def setup_extra_nics(action_handler, bootstrap_options, vm, machine, machine_spec)
       networks = bootstrap_options[:network_name]
       networks = [networks] if networks.is_a?(String)
       return if networks.nil? || networks.count < 2
@@ -311,7 +311,7 @@ module ChefProvisioningVsphere
         bootstrap_options,
         vm
       )
-      if is_windows?(vm) && !new_nics.nil? && @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port)
+      if is_windows?(vm) && !new_nics.nil? && @vm_helper.open_port?(machine_spec.location['ipaddress'], @vm_helper.port)
         new_nics.each do |nic|
           nic_label = nic.device.deviceInfo.label
           machine.execute_always(
@@ -346,6 +346,7 @@ module ChefProvisioningVsphere
         # or the ip reported back by the vm if using dhcp
         # it *may* be nil if just cloned
         vm_ip = ip_to_bootstrap(bootstrap_options, vm) || vm.guest.ipAddress
+        machine_spec.location['ipaddress'] = vm_ip
         transport = nil
         unless vm_ip.nil?
           transport = transport_for(machine_spec, bootstrap_options[:ssh], vm_ip)
@@ -390,6 +391,7 @@ module ChefProvisioningVsphere
     # @param [Object] machine_spec The spec required to talk to the VM.
     def attempt_ip(machine_options, action_handler, vm, machine_spec)
       vm_ip = ip_to_bootstrap(machine_options[:bootstrap_options], vm)
+      machine_spec.location['ipaddress'] = vm_ip
 
       wait_for_ip(vm, machine_options, machine_spec, action_handler)
 
@@ -457,11 +459,12 @@ module ChefProvisioningVsphere
       ip_to_bootstrap(bootstrap_options, vm)
       ready_timeout = machine_options[:ready_timeout] || 300
       msg1 = "waiting up to #{ready_timeout} seconds for customization"
-      msg2 = " and find #{@vm_helper.ip}" if @vm_helper.ip? # unless vm_ip == vm.guest.ipAddress # RuntimeError: can't modify frozen String
+      msg2 = " and find #{machine_spec.location['ipaddress']}" unless machine_spec.location['ipaddress'].nil? # unless vm_ip == vm.guest.ipAddress # RuntimeError: can't modify frozen String
       msg = [msg1, msg2].join
       action_handler.report_progress msg
 
       vm_ip = ip_to_bootstrap(bootstrap_options, vm) || vm.guest.ipAddress
+      machine_spec.location['ipaddress'] = vm_ip
       until transport_for(
         machine_spec,
         machine_options[:bootstrap_options][:ssh],
@@ -471,6 +474,7 @@ module ChefProvisioningVsphere
           "IP addresses found: #{all_ips_for(vm)}"
         )
         vm_ip = ip_to_bootstrap(bootstrap_options, vm) || vm.guest.ipAddress
+        machine_spec.location['ipaddress'] = vm_ip
         if has_ip?(vm_ip, vm)
           transport_for(
             machine_spec,
@@ -869,24 +873,25 @@ module ChefProvisioningVsphere
     # @param [Object] vm The VM object from Chef-Provisioning
     def ip_to_bootstrap(bootstrap_options, vm)
       @vm_helper.find_port?(vm, bootstrap_options) unless vm_helper.port?
+      vm_ip=nil
       if has_static_ip(bootstrap_options)
         if bootstrap_options[:customization_spec].is_a?(String)
           spec = vsphere_helper.find_customization_spec(bootstrap_options[:customization_spec])
-          @vm_helper.ip = spec.nicSettingMap[0].adapter.ip.ipAddress
+          vm_ip = spec.nicSettingMap[0].adapter.ip.ipAddress
         else
           ## Check if true available
-          @vm_helper.ip = bootstrap_options[:customization_spec][:ipsettings][:ip] unless vm_helper.ip?
-          print "." until @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
+          vm_ip = bootstrap_options[:customization_spec][:ipsettings][:ip] unless vm_helper.ip?
+          print "." until @vm_helper.open_port?(vm_ip, @vm_helper.port, 1)
         end
       else
         if use_ipv4_during_bootstrap?(bootstrap_options)
-          until @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
+          until @vm_helper.open_port?(vm_ip, @vm_helper.port, 1)
             wait_for_ipv4(bootstrap_ip_timeout(bootstrap_options), vm)
           end
         end
-        @vm_helper.ip = vm.guest.ipAddress until vm_guest_ip?(vm) && @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1) # Don't set empty ip
+        vm_ip = vm.guest.ipAddress until vm_guest_ip?(vm) && @vm_helper.open_port?(vm_ip, @vm_helper.port, 1) # Don't set empty ip
       end
-      @vm_helper.ip.to_s
+      vm_ip.to_s
     end
 
     # Force IPv4 a bootstrap, default: false
@@ -922,8 +927,8 @@ module ChefProvisioningVsphere
       while start_search_ip && (tries += 1) <= max_tries
         print "."
         sleep sleep_time
-        @vm_helper.ip = vm.guest.ipAddress if vm_guest_ip?(vm)
-        start_search_ip = false if @vm_helper.open_port?(@vm_helper.ip, @vm_helper.port, 1)
+        vm_ip = vm.guest.ipAddress if vm_guest_ip?(vm)
+        start_search_ip = false if @vm_helper.open_port?(vm_ip, @vm_helper.port, 1)
       end
       raise "Timed out waiting for ipv4 address!" if tries > max_tries
       puts "Found ipv4 address!"
