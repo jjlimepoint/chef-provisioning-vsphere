@@ -873,7 +873,7 @@ module ChefProvisioningVsphere
     # @param [Object] vm The VM object from Chef-Provisioning
     def ip_to_bootstrap(bootstrap_options, vm)
       @vm_helper.find_port?(vm, bootstrap_options) unless vm_helper.port?
-      vm_ip=nil
+      vm_ip = nil
       if has_static_ip(bootstrap_options)
         if bootstrap_options[:customization_spec].is_a?(String)
           spec = vsphere_helper.find_customization_spec(bootstrap_options[:customization_spec])
