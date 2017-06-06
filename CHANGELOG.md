@@ -1,7 +1,19 @@
 # Change Log
 
-## [2.0.4](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.4) (2017-05-24)
-[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.3...2.0.4)
+## [2.0.5](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.5) (2017-06-06)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.4...2.0.5)
+
+**Closed issues:**
+
+- kitchen destroy not destroying machines [\#37](https://github.com/chef-partners/chef-provisioning-vsphere/issues/37)
+
+**Merged pull requests:**
+
+- @vm\_helper.ip is this global structure, which gets set to the current… [\#41](https://github.com/chef-partners/chef-provisioning-vsphere/pull/41) ([jjlimepoint](https://github.com/jjlimepoint))
+- Handle blank guest IP address that generates multiple different errors. [\#38](https://github.com/chef-partners/chef-provisioning-vsphere/pull/38) ([Belogix](https://github.com/Belogix))
+
+## [v2.0.4](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.4) (2017-05-24)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.3...v2.0.4)
 
 **Merged pull requests:**
 

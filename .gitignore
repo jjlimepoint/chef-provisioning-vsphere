@@ -8,3 +8,4 @@ my_cookbook
 .DS_Store
 doc/
 .yardoc/
+.kitchen/
