@@ -350,5 +350,7 @@ You can run then `kitchen diagnose` to verify the nodes and settings that will b
 
 We have attempted to `TODO` markings. If you find one, whether it's documentation or a feature, it's a great place to start helping out. `$ grep -r "TODO" lib/`
 
+We also have a Jenkinsfile with the complete testing suite for this repo. Please don't hesitate to pull it down and verify the changes locally with the complete integration tests that are required.
+
 [gem]: https://rubygems.org/gems/chef-provisioning-vsphere
 [travis]: https://travis-ci.org/chef-partners/chef-provisioning-vsphere
