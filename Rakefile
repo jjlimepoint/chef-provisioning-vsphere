@@ -2,7 +2,6 @@
 require "bundler/gem_tasks"
 require "chef/provisioning/vsphere_driver/version"
 require "rspec/core/rake_task"
-require "chefstyle"
 require "rubocop/rake_task"
 require "yard"
 
