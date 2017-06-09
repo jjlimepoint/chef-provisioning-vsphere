@@ -3,6 +3,7 @@ AllCops:
     - "spec/**/*"
     - "vendor/**/*"
     - "pkg/**/*"
+    - "vsphere_testing/**/*"
     - "spec/unit/plugins/darwin/system_profiler_output.rb"
 
 inherit_from: .rubocop_todo.yml
