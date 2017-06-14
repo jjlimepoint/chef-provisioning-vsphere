@@ -1,11 +1,14 @@
 pipeline {
-  agent {
-    docker {
-      args '-u root'
-      reuseNode false
-      image 'localhost:5000/jjkeysv2'
+    agent {
+        docker {
+            args "-u root"
+                reuseNode false
+                image "localhost:5000/jjkeysv3"
+                }
     }
-  }
+    triggers {
+        pollSCM('H * * * *')
+    }
   stages {
     stage('Pull down ChefDK') {
       steps {
