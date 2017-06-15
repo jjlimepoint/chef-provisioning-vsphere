@@ -1,0 +1,45 @@
+---
+driver:
+  name: vsphere
+  driver_options:
+    host: '172.16.20.2'
+    user: 'administrator@vsphere.local'
+    password: 'PASSWORD'
+    insecure: true
+  machine_options:
+    start_timeout: 600
+    create_timeout: 600
+    ready_timeout: 90
+    bootstrap_options:
+      use_linked_clone: true
+      datacenter: 'Datacenter'
+      template_name: 'ubuntu16'
+      template_folder: 'Linux'
+      resource_pool: 'Cluster'
+      num_cpus: 2
+      memory_mb: 4096
+      ssh:
+        user: ubuntu
+        paranoid: false
+        password: PASSWORD
+        port: 22
+
+provisioner:
+  name: chef_zero
+  sudo_command: sudo
+
+verifier:
+  name: inspec
+
+transport:
+  username: "admini"
+  password: admini
+
+platforms:
+  - name: ubuntu-16.04
+
+suites:
+  - name: default
+    run_list:
+      - recipe[vsphere_demo::default]
+    attributes:
