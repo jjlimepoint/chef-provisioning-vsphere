@@ -3,7 +3,7 @@ pipeline {
         docker {
             args "-u root"
                 reuseNode false
-                image "localhost:5000/jjkeysv3"
+                image "localhost:5000/jjkeysv5"
                 }
     }
     triggers {
