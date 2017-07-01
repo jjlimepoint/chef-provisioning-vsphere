@@ -3,7 +3,7 @@ pipeline {
         docker {
             args "-u root"
                 reuseNode false
-                image "localhost:5000/jjkeysv3"
+                image "localhost:5000/jjkeysv5"
                 }
     }
     triggers {
@@ -46,6 +46,7 @@ for i in recipes/*; do sed -i 's/PASSWORD/Good4bye!/g' "$i"; done
 sed -i 's/PASSWORD/Good4bye!/g' .kitchen.yml
 sed -i 's/ORG/jj-model-t/g' recipes/windows_provision.rb
 chef exec bundle install
+chef exec gem install test-kitchen
 chef exec bundle exec kitchen list'''
       }
     }
