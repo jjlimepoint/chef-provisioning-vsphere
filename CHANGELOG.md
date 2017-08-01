@@ -1,7 +1,23 @@
 # Change Log
 
-## [2.0.5](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.5) (2017-06-06)
-[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.4...2.0.5)
+## [2.0.5](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.5) (2017-07-24)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.5...2.0.5)
+
+**Closed issues:**
+
+- Error: ArgumentError: wrong number of arguments \(given 0, expected 1..2\) When provisioning  [\#51](https://github.com/chef-partners/chef-provisioning-vsphere/issues/51)
+- action :destroy doesn't work, OR nodes/MACHINE.json not being written out. [\#43](https://github.com/chef-partners/chef-provisioning-vsphere/issues/43)
+- Failing to test WinRM availability when creating vm [\#35](https://github.com/chef-partners/chef-provisioning-vsphere/issues/35)
+
+**Merged pull requests:**
+
+- moving to development depenadcy [\#54](https://github.com/chef-partners/chef-provisioning-vsphere/pull/54) ([jjasghar](https://github.com/jjasghar))
+- Adding github pull request setup [\#48](https://github.com/chef-partners/chef-provisioning-vsphere/pull/48) ([jjasghar](https://github.com/jjasghar))
+- Jenkinsfile for Jenkins BlueOcean [\#46](https://github.com/chef-partners/chef-provisioning-vsphere/pull/46) ([jjasghar](https://github.com/jjasghar))
+- Initial examples directory [\#45](https://github.com/chef-partners/chef-provisioning-vsphere/pull/45) ([jjasghar](https://github.com/jjasghar))
+
+## [v2.0.5](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.5) (2017-06-06)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.4...v2.0.5)
 
 **Closed issues:**
 
