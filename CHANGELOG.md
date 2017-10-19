@@ -1,7 +1,20 @@
 # Change Log
 
-## [2.0.5](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.5) (2017-07-24)
-[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.5...2.0.5)
+## [2.0.7](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.7) (2017-10-19)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.6...2.0.7)
+
+**Closed issues:**
+
+- Cannot assign requested address - bind\(2\) for \[::1\]:8889 [\#58](https://github.com/chef-partners/chef-provisioning-vsphere/issues/58)
+
+**Merged pull requests:**
+
+- Solve \#59: action :destroy fails on powered off VM [\#60](https://github.com/chef-partners/chef-provisioning-vsphere/pull/60) ([algaut](https://github.com/algaut))
+- Added single-host config info [\#57](https://github.com/chef-partners/chef-provisioning-vsphere/pull/57) ([akulbe](https://github.com/akulbe))
+- typo [\#55](https://github.com/chef-partners/chef-provisioning-vsphere/pull/55) ([netflash](https://github.com/netflash))
+
+## [v2.0.6](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.6) (2017-07-24)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.5...v2.0.6)
 
 **Closed issues:**
 
