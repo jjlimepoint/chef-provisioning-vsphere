@@ -1,7 +1,18 @@
 # Change Log
 
-## [2.0.7](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.7) (2017-10-19)
-[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.6...2.0.7)
+## [2.0.8](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.8) (2017-10-23)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.7...2.0.8)
+
+**Closed issues:**
+
+- Action :destroy fails on powered off VM [\#59](https://github.com/chef-partners/chef-provisioning-vsphere/issues/59)
+
+**Merged pull requests:**
+
+- rubocop -a && rubocop  --auto-gen-config [\#61](https://github.com/chef-partners/chef-provisioning-vsphere/pull/61) ([bemehiser](https://github.com/bemehiser))
+
+## [v2.0.7](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.7) (2017-10-19)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.6...v2.0.7)
 
 **Closed issues:**
 
