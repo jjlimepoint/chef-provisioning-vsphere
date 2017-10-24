@@ -392,20 +392,33 @@ module ChefProvisioningVsphere
     # @param [String] name Name of the Network.
     def find_network(name)
       base = datacenter.networkFolder
-      entity_array = name.split("/").reject(&:empty?)
+      entity_array = name.split('/').reject(&:empty?)
       entity_array.each do |item|
-        case base
-        when RbVmomi::VIM::Folder
-          base = base.find(item)
-        when RbVmomi::VIM::VmwareDistributedVirtualSwitch
-          idx = base.summary.portgroupName.find_index(item)
-          base = idx.nil? ? nil : base.portgroup[idx]
-        end
+        base = traverse_folders_for_network(base, item)
       end
 
       raise "vSphere Network not found [#{name}]" if base.nil?
 
       base
+    end
+
+    # Search the item through the base's children
+    # @param base vSphere object where to search
+    # @param [String] name the name of the network to look for
+    def traverse_folders_for_network(base, item)
+      Chef::Log.debug("Searching #{item} in #{base.name}")
+      case base
+      when RbVmomi::VIM::Folder
+        res = base.find(item)
+        return res unless res.nil?
+        base.childEntity.each do |child|
+          res = traverse_folders_for_network(child, item)
+          return res unless res.nil?
+        end
+      when RbVmomi::VIM::VmwareDistributedVirtualSwitch
+        idx = base.summary.portgroupName.find_index(item)
+        idx.nil? ? nil : base.portgroup[idx]
+      end
     end
 
     # Locate the Customization Spec in vSphere.
