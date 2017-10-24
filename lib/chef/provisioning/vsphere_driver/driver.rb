@@ -669,11 +669,18 @@ module ChefProvisioningVsphere
       Chef::Log.debug("Clone spec: #{clone_spec.pretty_inspect}")
 
       vm_folder = vsphere_helper.find_folder(bootstrap_options[:vm_folder])
+      last_progress = 0
       vm_template.CloneVM_Task(
         name: machine_name,
         folder: vm_folder,
         spec: clone_spec
-      ).wait_for_completion
+       ).wait_for_progress do |progress|
+       if (progress.is_a? Numeric) && (progress / 10).floor != (last_progress / 10).floor
+         print "\n#{machine_name} progress: #{progress}%"
+         last_progress = progress
+        end
+      end
+      print "\n#{machine_name} done!"
 
       vm = vsphere_helper.find_vm(vm_folder, machine_name)
 
