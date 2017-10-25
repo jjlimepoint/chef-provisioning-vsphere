@@ -675,10 +675,10 @@ module ChefProvisioningVsphere
         name: machine_name,
         folder: vm_folder,
         spec: clone_spec
-       ).wait_for_progress do |progress|
-       if (progress.is_a? Numeric) && (progress / 10).floor != (last_progress / 10).floor
-         print "\n#{machine_name} progress: #{progress}%"
-         last_progress = progress
+      ).wait_for_progress do |progress|
+        if (progress.is_a? Numeric) && (progress / 10).floor != (last_progress / 10).floor
+          print "\n#{machine_name} progress: #{progress}%"
+          last_progress = progress
         end
       end
       print "\n#{machine_name} done!"
@@ -891,7 +891,7 @@ module ChefProvisioningVsphere
           vm_ip = bootstrap_options[:customization_spec][:ipsettings][:ip] unless vm_helper.ip?
           nb_attempts = 0
           until @vm_helper.open_port?(vm_ip, @vm_helper.port, 1) || nb_attempts > bootstrap_options[:ready_timeout]
-            print "."
+            print '.'
             nb_attempts += 1
           end
         end
