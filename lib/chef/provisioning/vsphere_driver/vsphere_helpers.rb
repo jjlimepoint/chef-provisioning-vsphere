@@ -406,7 +406,7 @@ module ChefProvisioningVsphere
 
     # Search the item through the base's children
     # @param base vSphere object where to search
-    # @param [String] name the name of the network to look for
+    # @param [String] item the name of the network to look for
     def traverse_folders_for_network(base, item)
       Chef::Log.debug("Searching #{item} in #{base.name}")
       case base
