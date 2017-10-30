@@ -1,7 +1,18 @@
 # Change Log
 
-## [2.0.8](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.8) (2017-10-23)
-[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.7...2.0.8)
+## [2.0.9](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.9) (2017-10-30)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.8...2.0.9)
+
+**Closed issues:**
+
+- Networks under a distributed switch not at the rootFolder cannot be found [\#56](https://github.com/chef-partners/chef-provisioning-vsphere/issues/56)
+
+**Merged pull requests:**
+
+- Several small fixes [\#63](https://github.com/chef-partners/chef-provisioning-vsphere/pull/63) ([algaut](https://github.com/algaut))
+
+## [v2.0.8](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.8) (2017-10-23)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.7...v2.0.8)
 
 **Closed issues:**
 
