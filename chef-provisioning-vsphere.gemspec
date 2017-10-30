@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.homepage = 'https://github.com/chef-partners/chef-provisioning-vsphere'
   s.license = 'MIT'
   s.bindir       = 'bin'
-  s.executables  = %w()
+  s.executables  = %w[]
   s.require_path = 'lib'
   s.files        = `git ls-files -z`.split("\x0")
   s.test_files   = s.files.grep(%r{^(test|spec|features)/})
