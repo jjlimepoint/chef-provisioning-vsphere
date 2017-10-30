@@ -178,11 +178,11 @@ module ChefProvisioningVsphere
     def add_extra_nic(action_handler, vm_template, options, vm)
       deviceAdditions, changes = network_device_changes(action_handler, vm_template, options)
 
-      if deviceAdditions.count > 0
+      if deviceAdditions.count.positive?
         current_networks = find_ethernet_cards_for(vm).map { |card| network_id_for(card.backing) }
         new_devices = deviceAdditions.reject { |device| current_networks.include?(network_id_for(device.device.backing)) }
 
-        if new_devices.count > 0
+        if new_devices.count.positive?
           action_handler.report_progress 'Adding extra NICs'
           task = vm.ReconfigVM_Task(spec: RbVmomi::VIM.VirtualMachineConfigSpec(deviceChange: new_devices))
           task.wait_for_completion

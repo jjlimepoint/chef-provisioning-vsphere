@@ -14,7 +14,7 @@ require 'chef/provisioning/vsphere_driver/vm_helper'
 # Provisions machines in vSphere.
 module ChefProvisioningVsphere
   # Inherits the Chef::Provisioning::Driver attirbutes
-  class VsphereDriver < Chef::Provisioning::Driver
+  class VsphereDriver < Chef::Provisioning::Driver # rubocop:disable Metrics/ClassLength
     include Chef::Mixin::ShellOut
 
     # Creates the new object via the URL

@@ -38,4 +38,4 @@ YARD::Rake::YardocTask.new do |t|
   t.stats_options = ['--list-undoc'] # optional
 end
 
-task default: %i[style unit]
+task default: %i(style unit)
