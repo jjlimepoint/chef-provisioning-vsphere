@@ -1,7 +1,18 @@
 # Change Log
 
-## [2.0.9](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.9) (2017-10-30)
-[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.8...2.0.9)
+## [2.0.10](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.10) (2017-10-31)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.9...2.0.10)
+
+**Closed issues:**
+
+- Undefined method `match?' for "machine\_name":String [\#65](https://github.com/chef-partners/chef-provisioning-vsphere/issues/65)
+
+**Merged pull requests:**
+
+-  Fixed RuboCop and clone\_spec\_builder match? -\> match [\#64](https://github.com/chef-partners/chef-provisioning-vsphere/pull/64) ([bemehiser](https://github.com/bemehiser))
+
+## [v2.0.9](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.9) (2017-10-30)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.8...v2.0.9)
 
 **Closed issues:**
 
