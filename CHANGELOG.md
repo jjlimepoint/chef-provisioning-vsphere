@@ -1,7 +1,53 @@
 # Change Log
 
-## [2.0.5](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.5) (2017-07-24)
-[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.5...2.0.5)
+## [2.0.10](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.10) (2017-10-31)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.9...2.0.10)
+
+**Closed issues:**
+
+- Undefined method `match?' for "machine\_name":String [\#65](https://github.com/chef-partners/chef-provisioning-vsphere/issues/65)
+
+**Merged pull requests:**
+
+-  Fixed RuboCop and clone\_spec\_builder match? -\> match [\#64](https://github.com/chef-partners/chef-provisioning-vsphere/pull/64) ([bemehiser](https://github.com/bemehiser))
+
+## [v2.0.9](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.9) (2017-10-30)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.8...v2.0.9)
+
+**Closed issues:**
+
+- Networks under a distributed switch not at the rootFolder cannot be found [\#56](https://github.com/chef-partners/chef-provisioning-vsphere/issues/56)
+
+**Merged pull requests:**
+
+- Several small fixes [\#63](https://github.com/chef-partners/chef-provisioning-vsphere/pull/63) ([algaut](https://github.com/algaut))
+
+## [v2.0.8](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.8) (2017-10-23)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.7...v2.0.8)
+
+**Closed issues:**
+
+- Action :destroy fails on powered off VM [\#59](https://github.com/chef-partners/chef-provisioning-vsphere/issues/59)
+
+**Merged pull requests:**
+
+- rubocop -a && rubocop  --auto-gen-config [\#61](https://github.com/chef-partners/chef-provisioning-vsphere/pull/61) ([bemehiser](https://github.com/bemehiser))
+
+## [v2.0.7](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.7) (2017-10-19)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.6...v2.0.7)
+
+**Closed issues:**
+
+- Cannot assign requested address - bind\(2\) for \[::1\]:8889 [\#58](https://github.com/chef-partners/chef-provisioning-vsphere/issues/58)
+
+**Merged pull requests:**
+
+- Solve \#59: action :destroy fails on powered off VM [\#60](https://github.com/chef-partners/chef-provisioning-vsphere/pull/60) ([algaut](https://github.com/algaut))
+- Added single-host config info [\#57](https://github.com/chef-partners/chef-provisioning-vsphere/pull/57) ([akulbe](https://github.com/akulbe))
+- typo [\#55](https://github.com/chef-partners/chef-provisioning-vsphere/pull/55) ([netflash](https://github.com/netflash))
+
+## [v2.0.6](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.6) (2017-07-24)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.5...v2.0.6)
 
 **Closed issues:**
 
