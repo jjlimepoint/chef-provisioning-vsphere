@@ -7,7 +7,7 @@
 
 This is a [chef-provisioning](https://github.com/chef/chef-provisioning) provisioner for [VMware vSphere](http://www.vmware.com/products/vsphere).
 
-chef-provisioning-vsphere supports provisioning Unix/ssh and Windows/WinRMrm guest VMs.
+chef-provisioning-vsphere supports provisioning Unix/ssh and Windows/WinRM guest VMs.
 
 ## Prerequisites
 
@@ -87,7 +87,7 @@ This will use chef-zero and needs no chef server (only works for ssh). Note that
 - `[:network_name]` - array of network names to use. A NIC will be added for each
 - `[:memory_mb]` - number of megabytes to allocate for machine
 - `[:host]` - `{cluster}`/`{host}` to use during provisioning
-- `[:resource_pool]` - `{cluster}`/`{resource pool}` to use during provisioning 
+- `[:resource_pool]` - `{cluster}`/`{resource pool}` to use during provisioning
 (for single-host setups, use `{vsphere_ip / vsphere_hostname}`/`{resource pool}`)
 - `[:additional_disk_size_gb]` - an array of numbers, each signifying the number of gigabytes to assign to an additional disk (*this requires a datastore to be specified*)
 - `[:initial_iso_file]` - an iso file to mount at boot.  This is useful for custom OS installations.  In the format of `[datastore] filename.iso`
