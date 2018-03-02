@@ -710,6 +710,28 @@ module ChefProvisioningVsphere
         task.wait_for_completion
       end
 
+      if bootstrap_options[:initial_iso_image]
+        d_obj = vm.config.hardware.device.select {|hw| hw.class == RbVmomi::VIM::VirtualCdrom}.first
+        backing = RbVmomi::VIM::VirtualCdromIsoBackingInfo(fileName: bootstrap_options[:initial_iso_image])
+        task = vm.ReconfigVM_Task(
+          spec: RbVmomi::VIM.VirtualMachineConfigSpec(
+            deviceChange: [
+              operation: :edit,
+              device: RbVmomi::VIM::VirtualCdrom(
+                backing: backing,
+                key: d_obj.key,
+                controllerKey: d_obj.controllerKey,
+                connectable: RbVmomi::VIM::VirtualDeviceConnectInfo(
+                  startConnected: true,
+                  connected: true,
+                  allowGuestControl: true)
+                )
+              ]
+            )
+          )
+          task.wait_for_completion
+      end
+
       vm
     end
 
