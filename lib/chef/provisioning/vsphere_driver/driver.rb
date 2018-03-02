@@ -847,8 +847,13 @@ module ChefProvisioningVsphere
       else
         winrm_options.merge!(options[:winrm_opts])
       end
-      endpoint = "http#{winrm_transport == :ssl ? 's' : ''}://"\
-                 "#{host}:#{port}/wsman"
+      scheme = winrm_transport == :ssl ? 'https' : 'http'
+      endpoint = URI::Generic.build(
+        scheme: scheme,
+        host: host,
+        port: port,
+        path: '/wsman'
+      ).to_s
 
       Chef::Provisioning::Transport::WinRM.new(
         endpoint,

@@ -17,7 +17,7 @@ A vCenter and valid login credentials.
 
 ### VM Template
 
-A VM template capable of installing Chef 11.8 or newer. This can be either windows or linux flavored.
+A VM template capable of installing Chef 11.8 or newer. This can be either windows or linux flavored. Both IPv4 and IPv6 are supported.
 
 ### A provisioning node (can be local)
 
