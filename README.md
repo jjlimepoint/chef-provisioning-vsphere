@@ -7,7 +7,7 @@
 
 This is a [chef-provisioning](https://github.com/chef/chef-provisioning) provisioner for [VMware vSphere](http://www.vmware.com/products/vsphere).
 
-chef-provisioning-vsphere supports provisioning Unix/ssh and Windows/WinRMrm guest VMs.
+chef-provisioning-vsphere supports provisioning Unix/ssh and Windows/WinRM guest VMs.
 
 ## Prerequisites
 
@@ -17,7 +17,7 @@ A vCenter and valid login credentials.
 
 ### VM Template
 
-A VM template capable of installing Chef 11.8 or newer. This can be either windows or linux flavored.
+A VM template capable of installing Chef 11.8 or newer. This can be either windows or linux flavored. Both IPv4 and IPv6 are supported.
 
 ### A provisioning node (can be local)
 
@@ -87,9 +87,10 @@ This will use chef-zero and needs no chef server (only works for ssh). Note that
 - `[:network_name]` - array of network names to use. A NIC will be added for each
 - `[:memory_mb]` - number of megabytes to allocate for machine
 - `[:host]` - `{cluster}`/`{host}` to use during provisioning
-- `[:resource_pool]` - `{cluster}`/`{resource pool}` to use during provisioning 
+- `[:resource_pool]` - `{cluster}`/`{resource pool}` to use during provisioning
 (for single-host setups, use `{vsphere_ip / vsphere_hostname}`/`{resource pool}`)
 - `[:additional_disk_size_gb]` - an array of numbers, each signifying the number of gigabytes to assign to an additional disk (*this requires a datastore to be specified*)
+- `[:initial_iso_file]` - an iso file to mount at boot.  This is useful for custom OS installations.  In the format of `[datastore] filename.iso`
 - `[:bootstrap_ipv4]` - `true` / `false`, set to `true` to wait for an IPv4 address to become available before bootstrapping.
 - `[:ipv4_timeout]` - use with `[:bootstrap_ipv4]`, set the time in seconds to wait before an IPv4 address is received (defaults to 30)
 - `[:ssh][:user]` user to use for ssh/winrm (defaults to root on linux/administrator on windows)

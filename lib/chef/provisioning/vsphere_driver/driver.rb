@@ -710,6 +710,28 @@ module ChefProvisioningVsphere
         task.wait_for_completion
       end
 
+      if bootstrap_options[:initial_iso_image]
+        d_obj = vm.config.hardware.device.select {|hw| hw.class == RbVmomi::VIM::VirtualCdrom}.first
+        backing = RbVmomi::VIM::VirtualCdromIsoBackingInfo(fileName: bootstrap_options[:initial_iso_image])
+        task = vm.ReconfigVM_Task(
+          spec: RbVmomi::VIM.VirtualMachineConfigSpec(
+            deviceChange: [
+              operation: :edit,
+              device: RbVmomi::VIM::VirtualCdrom(
+                backing: backing,
+                key: d_obj.key,
+                controllerKey: d_obj.controllerKey,
+                connectable: RbVmomi::VIM::VirtualDeviceConnectInfo(
+                  startConnected: true,
+                  connected: true,
+                  allowGuestControl: true)
+                )
+              ]
+            )
+          )
+          task.wait_for_completion
+      end
+
       vm
     end
 
@@ -847,8 +869,13 @@ module ChefProvisioningVsphere
       else
         winrm_options.merge!(options[:winrm_opts])
       end
-      endpoint = "http#{winrm_transport == :ssl ? 's' : ''}://"\
-                 "#{host}:#{port}/wsman"
+      scheme = winrm_transport == :ssl ? 'https' : 'http'
+      endpoint = URI::Generic.build(
+        scheme: scheme,
+        host: host,
+        port: port,
+        path: '/wsman'
+      ).to_s
 
       Chef::Provisioning::Transport::WinRM.new(
         endpoint,
@@ -890,7 +917,7 @@ module ChefProvisioningVsphere
           ## Check if true available
           vm_ip = bootstrap_options[:customization_spec][:ipsettings][:ip] unless vm_helper.ip?
           nb_attempts = 0
-          until @vm_helper.open_port?(vm_ip, @vm_helper.port, 1) || nb_attempts > bootstrap_options[:ready_timeout]
+          until @vm_helper.open_port?(vm_ip, @vm_helper.port, 1) || (nb_attempts > (bootstrap_options[:ready_timeout] || 90))
             print '.'
             nb_attempts += 1
           end

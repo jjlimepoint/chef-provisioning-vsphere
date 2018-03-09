@@ -1,7 +1,22 @@
 # Change Log
 
-## [2.0.10](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.0.10) (2017-10-31)
-[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.9...2.0.10)
+## [v2.1.0](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.1.0)
+
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.10...v2.1.0)
+
+**Closed issues:**
+
+- Setting network\_name disconnects all devices on OSX [\#62](https://github.com/chef-partners/chef-provisioning-vsphere/issues/62)
+- IPv6 address returned by VM can cause failures [\#52](https://github.com/chef-partners/chef-provisioning-vsphere/issues/52)
+
+**Merged pull requests:**
+
+- Handle IPv6 address returned by VM [\#81](https://github.com/chef-partners/chef-provisioning-vsphere/pull/81) ([jzinn](https://github.com/jzinn))
+- fixed bootstrap ready timeout call [\#73](https://github.com/chef-partners/chef-provisioning-vsphere/pull/73) ([tuccimon](https://github.com/tuccimon))
+- add initial\_iso\_image to support deployment from custom iso images [\#49](https://github.com/chef-partners/chef-provisioning-vsphere/pull/49) ([jjlimepoint](https://github.com/jjlimepoint))
+
+## [v2.0.10](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.0.10) (2017-10-31)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.9...v2.0.10)
 
 **Closed issues:**
 
