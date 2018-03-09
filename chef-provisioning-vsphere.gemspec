@@ -21,9 +21,9 @@ Gem::Specification.new do |s|
   s.files        = `git ls-files -z`.split("\x0")
   s.test_files   = s.files.grep(%r{^(test|spec|features)/})
 
-  s.add_dependency 'chef', '>= 12.0', '< 14.0'
+  s.add_dependency 'chef', '>= 12.0'
   s.add_dependency 'chef-provisioning', '~> 2.0'
-  s.add_dependency 'cheffish', '>= 4.0', '< 14.0'
+  s.add_dependency 'cheffish', '>= 4.0'
   s.add_dependency 'rbvmomi', '~> 1.10'
 
   s.add_development_dependency 'chefstyle'
