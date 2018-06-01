@@ -224,7 +224,7 @@ module ChefProvisioningVsphere
         vm = clone_vm(
           action_handler,
           bootstrap_options,
-          machine_spec.name
+          machine_spec
         )
       end
       vm
@@ -662,7 +662,8 @@ module ChefProvisioningVsphere
       end
     end
 
-    def clone_vm(action_handler, bootstrap_options, machine_name)
+    def clone_vm(action_handler, bootstrap_options, machine_spec)
+      machine_name = machine_spec.name
       vm_template = vm_template_for(bootstrap_options)
 
       spec_builder = CloneSpecBuilder.new(vsphere_helper, action_handler)
@@ -684,18 +685,17 @@ module ChefProvisioningVsphere
       print "\n#{machine_name} done!"
 
       vm = vsphere_helper.find_vm(vm_folder, machine_name)
+      add_machine_spec_location(vm, machine_spec)
 
-      additional_disk_size_gb = bootstrap_options[:additional_disk_size_gb]
-      unless additional_disk_size_gb.is_a?(Array)
-        additional_disk_size_gb = [additional_disk_size_gb]
+      additional_disk_size_gb = Array(bootstrap_options[:additional_disk_size_gb])
+
+      if !additional_disk_size_gb.empty? && bootstrap_options[:datastore].to_s.empty?
+        raise ':datastore must be specified when adding a disk to a cloned vm'
       end
 
       additional_disk_size_gb.each do |size|
         size = size.to_i
         next if size == 0
-        if bootstrap_options[:datastore].to_s.empty?
-          raise ':datastore must be specified when adding a disk to a cloned vm'
-        end
         task = vm.ReconfigVM_Task(
           spec: RbVmomi::VIM.VirtualMachineConfigSpec(
             deviceChange: [
@@ -725,11 +725,11 @@ module ChefProvisioningVsphere
                   startConnected: true,
                   connected: true,
                   allowGuestControl: true)
-                )
-              ]
-            )
+              )
+            ]
           )
-          task.wait_for_completion
+        )
+        task.wait_for_completion
       end
 
       vm
