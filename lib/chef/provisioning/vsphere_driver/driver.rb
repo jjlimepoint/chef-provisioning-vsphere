@@ -732,8 +732,6 @@ module ChefProvisioningVsphere
                   allowGuestControl: true
                 )
 
-                  allowGuestControl: true)
-
               )
             ]
           )
