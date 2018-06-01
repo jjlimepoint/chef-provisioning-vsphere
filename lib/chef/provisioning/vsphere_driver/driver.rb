@@ -224,7 +224,7 @@ module ChefProvisioningVsphere
         vm = clone_vm(
           action_handler,
           bootstrap_options,
-          machine_spec.name
+          machine_spec
         )
       end
       vm
@@ -662,7 +662,8 @@ module ChefProvisioningVsphere
       end
     end
 
-    def clone_vm(action_handler, bootstrap_options, machine_name)
+    def clone_vm(action_handler, bootstrap_options, machine_spec)
+      machine_name = machine_spec.name
       vm_template = vm_template_for(bootstrap_options)
 
       spec_builder = CloneSpecBuilder.new(vsphere_helper, action_handler)
@@ -684,9 +685,34 @@ module ChefProvisioningVsphere
       print "\n#{machine_name} done!"
 
       vm = vsphere_helper.find_vm(vm_folder, machine_name)
+      add_machine_spec_location(vm, machine_spec)
+
+      additional_disk_size_gb = Array(bootstrap_options[:additional_disk_size_gb])
+
 
       vsphere_helper.update_main_disk_size_for(vm, bootstrap_options[:main_disk_size_gb])
       vsphere_helper.set_additional_disks_for(vm, bootstrap_options[:datastore], bootstrap_options[:additional_disk_size_gb])
+      if !additional_disk_size_gb.empty? && bootstrap_options[:datastore].to_s.empty?
+        raise ':datastore must be specified when adding a disk to a cloned vm'
+      end
+
+      additional_disk_size_gb.each do |size|
+        size = size.to_i
+        next if size == 0
+        task = vm.ReconfigVM_Task(
+          spec: RbVmomi::VIM.VirtualMachineConfigSpec(
+            deviceChange: [
+              vsphere_helper.virtual_disk_for(
+                vm,
+                bootstrap_options[:datastore],
+                size
+              )
+            ]
+          )
+        )
+        task.wait_for_completion
+      end
+
 
       if bootstrap_options[:initial_iso_image]
         d_obj = vm.config.hardware.device.select {|hw| hw.class == RbVmomi::VIM::VirtualCdrom}.first
@@ -702,8 +728,12 @@ module ChefProvisioningVsphere
                 connectable: RbVmomi::VIM::VirtualDeviceConnectInfo(
                   startConnected: true,
                   connected: true,
+
                   allowGuestControl: true
                 )
+
+                  allowGuestControl: true)
+
               )
             ]
           )

@@ -23,12 +23,12 @@ module Kitchen
                        ssh: {
                          user: 'root',
                          paranoid: false,
-                         port: 22
+                         port: 22,
                        },
                        convergence_options: {},
                        customization_spec: {
-                         domain: 'local'
-                       }
+                         domain: 'local',
+                       },
                      }
 
       default_config(:vsphere_name) do |driver|
@@ -39,17 +39,26 @@ module Kitchen
       #
       # @param [Object] state Uses state of the machine from Chef provisioning.
       def create(state)
-        state[:vsphere_name] = config[:vsphere_name]
+        state[:vsphere_name] ||= config[:vsphere_name]
         state[:username] = config[:machine_options][:bootstrap_options][:ssh][:user]
         state[:password] = config[:machine_options][:bootstrap_options][:ssh][:password]
         config[:server_name] = state[:vsphere_name]
 
-        machine = with_provisioning_driver(state) do |action_handler, driver, machine_spec|
-          driver.allocate_machine(action_handler, machine_spec, config[:machine_options])
-          driver.ready_machine(action_handler, machine_spec, config[:machine_options])
-          state[:server_id] = machine_spec.location['server_id']
-          state[:hostname] = machine_spec.location['ipaddress']
-          machine_spec.save(action_handler)
+        with_provisioning_driver(state) do |action_handler, driver, machine_spec|
+          begin
+            driver.allocate_machine(action_handler, machine_spec, config[:machine_options])
+            driver.ready_machine(action_handler, machine_spec, config[:machine_options])
+          rescue
+            raise
+          ensure
+            if machine_spec
+              if machine_spec.location
+                state[:server_id] = machine_spec.location['server_id']
+                state[:hostname] = machine_spec.location['ipaddress']
+              end
+              machine_spec.save(action_handler)
+            end
+          end
         end
       end
 

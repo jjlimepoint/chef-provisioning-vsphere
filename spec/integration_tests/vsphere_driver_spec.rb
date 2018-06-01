@@ -36,6 +36,8 @@ require 'chef/provisioning/machine_spec'
 
 describe 'vsphere_driver' do
   before :all do
+    skip("driver options do not exist") unless File.exist?(File.expand_path('../config.rb', __FILE__))
+
     @vm_name = "cmvd-test-#{SecureRandom.hex}"
     @metal_config = eval File.read(File.expand_path('../config.rb', __FILE__))
     Cheffish.honor_local_mode do
