@@ -1,7 +1,16 @@
 # Change Log
 
-## [v2.1.0](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.1.0)
+## [v2.2.0](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.2.0)
 
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.1.0...v2.2.0)
+
+**Merged pull requests:**
+
+- Save VM properties to kitchen state file after cloning [\#83](https://github.com/chef-partners/chef-provisioning-vsphere/pull/83) ([josh-barker](https://github.com/josh-barker))
+- allow chef14 [\#82](https://github.com/chef-partners/chef-provisioning-vsphere/pull/82) ([jjlimepoint](https://github.com/jjlimepoint))
+- Main disk size and rework of ip\_to\_bootstrap\(\) [\#72](https://github.com/chef-partners/chef-provisioning-vsphere/pull/72) ([algaut](https://github.com/algaut))
+
+## [v2.1.0](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.1.0) (2018-03-02)
 [Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.0.10...v2.1.0)
 
 **Closed issues:**
