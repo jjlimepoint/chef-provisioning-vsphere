@@ -98,7 +98,7 @@ describe ChefProvisioningVsphere::CloneSpecBuilder do
     end
 
     it 'raises an error' do
-      expect { subject }.to raise_error
+      expect { subject }.to raise_error(RuntimeError)
     end
   end
 
@@ -139,7 +139,7 @@ describe ChefProvisioningVsphere::CloneSpecBuilder do
       let(:hostname) { 'my_host' }
 
       it 'raises an error' do
-        expect { subject }.to raise_error
+        expect { subject }.to raise_error(RuntimeError)
       end
     end
 
@@ -147,7 +147,7 @@ describe ChefProvisioningVsphere::CloneSpecBuilder do
       let(:hostname) { '-myhost' }
 
       it 'raises an error' do
-        expect { subject }.to raise_error
+        expect { subject }.to raise_error(RuntimeError)
       end
     end
 
@@ -155,7 +155,7 @@ describe ChefProvisioningVsphere::CloneSpecBuilder do
       let(:hostname) { 'myhost-' }
 
       it 'raises an error' do
-        expect { subject }.to raise_error
+        expect { subject }.to raise_error(RuntimeError)
       end
     end
   end

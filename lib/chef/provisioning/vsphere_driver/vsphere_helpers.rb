@@ -133,7 +133,7 @@ module ChefProvisioningVsphere
       vim # ensure connection is valid
       @datacenter ||= begin
         rootFolder = vim.serviceInstance.content.rootFolder
-        dc = traverse_folders_for_dc(vim.rootFolder, datacenter_name) || abort('vSphere Datacenter not found [#{datacenter_name}]')
+        dc = traverse_folders_for_dc(vim.rootFolder, datacenter_name) || abort("vSphere Datacenter not found [#{datacenter_name}]")
       end
     end
 
@@ -259,12 +259,12 @@ module ChefProvisioningVsphere
     # @param [Subject] datastore the datastore the disk will be created on.
     # @param [Subject] size_gb the size of the disk.
     def set_additional_disks_for(vm, datastore, additional_disk_size_gb)
-      (additional_disk_size_gb.is_a?(Array) ? additional_disk_size_gb : [additional_disk_size_gb]).each do |size|
+      raise ':datastore must be specified when adding a disk to a cloned vm' if datastore.to_s.empty? && additional_disk_size_gb
+
+      Array(additional_disk_size_gb).each do |size|
         size = size.to_i
-        next if size.zero?
-        if datastore.to_s.empty?
-          raise ':datastore must be specified when adding a disk to a cloned vm'
-        end
+        next if size <= 0
+
         task = vm.ReconfigVM_Task(
           spec: RbVmomi::VIM.VirtualMachineConfigSpec(
             deviceChange: [
