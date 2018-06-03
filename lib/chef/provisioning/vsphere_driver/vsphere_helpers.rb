@@ -280,6 +280,37 @@ module ChefProvisioningVsphere
       end
     end
 
+    # Mounts the an iso on the first virtual CD ROm
+    #
+    # @param [Object] vm the VM object.
+    # @param [Subject] name of the iso file
+    def set_initial_iso(vm, initial_iso_image)
+      return unless initial_iso_image
+
+      d_obj = vm.config.hardware.device.select { |hw| hw.class == RbVmomi::VIM::VirtualCdrom }.first
+      backing = RbVmomi::VIM::VirtualCdromIsoBackingInfo(fileName: initial_iso_image)
+
+      task = vm.ReconfigVM_Task(
+        spec: RbVmomi::VIM.VirtualMachineConfigSpec(
+          deviceChange: [
+            operation: :edit,
+            device: RbVmomi::VIM::VirtualCdrom(
+              backing: backing,
+              key: d_obj.key,
+              controllerKey: d_obj.controllerKey,
+              connectable: RbVmomi::VIM::VirtualDeviceConnectInfo(
+                startConnected: true,
+                connected: true,
+
+                allowGuestControl: true
+              )
+            )
+          ]
+        )
+      )
+      task.wait_for_completion
+    end
+
     # Updates the main virtual disk for the VM
     # This can only add capacity to the main disk, it is not possible to reduce the capacity.
     #

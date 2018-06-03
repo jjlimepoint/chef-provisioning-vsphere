@@ -689,31 +689,7 @@ module ChefProvisioningVsphere
 
       vsphere_helper.update_main_disk_size_for(vm, bootstrap_options[:main_disk_size_gb])
       vsphere_helper.set_additional_disks_for(vm, bootstrap_options[:datastore], bootstrap_options[:additional_disk_size_gb])
-
-      if bootstrap_options[:initial_iso_image]
-        d_obj = vm.config.hardware.device.select {|hw| hw.class == RbVmomi::VIM::VirtualCdrom}.first
-        backing = RbVmomi::VIM::VirtualCdromIsoBackingInfo(fileName: bootstrap_options[:initial_iso_image])
-        task = vm.ReconfigVM_Task(
-          spec: RbVmomi::VIM.VirtualMachineConfigSpec(
-            deviceChange: [
-              operation: :edit,
-              device: RbVmomi::VIM::VirtualCdrom(
-                backing: backing,
-                key: d_obj.key,
-                controllerKey: d_obj.controllerKey,
-                connectable: RbVmomi::VIM::VirtualDeviceConnectInfo(
-                  startConnected: true,
-                  connected: true,
-
-                  allowGuestControl: true
-                )
-
-              )
-            ]
-          )
-        )
-        task.wait_for_completion
-      end
+      vsphere_helper.set_initial_iso(vm, bootstrap_options[:initial_iso_file])
 
       vm
     end
