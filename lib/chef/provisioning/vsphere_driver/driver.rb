@@ -916,30 +916,31 @@ module ChefProvisioningVsphere
     def ip_to_bootstrap(bootstrap_options, vm)
       start_time = Time.now.utc
       timeout = bootstrap_ip_ready_timeout(bootstrap_options)
-      @vm_helper.find_port?(vm, bootstrap_options) unless vm_helper.port?
+      vm_helper.find_port?(vm, bootstrap_options) unless vm_helper.port?
+
       # First get the IP to be tested
       if has_static_ip(bootstrap_options)
         if bootstrap_options[:customization_spec].is_a?(String)
           spec = vsphere_helper.find_customization_spec(bootstrap_options[:customization_spec])
-          vm_ip = spec.nicSettingMap[0].adapter.ip.ipAddress # Use a direct return here?
+          vm_ip = spec.nicSettingMap[0].adapter.ip.ipAddress
         else
           ## Check if true available
-          vm_ip = bootstrap_options[:customization_spec][:ipsettings][:ip] unless vm_helper.ip?
-          nb_attempts = 0
-          until @vm_helper.open_port?(vm_ip, @vm_helper.port, 1) || (nb_attempts > (bootstrap_options[:ready_timeout] || 90))
-            print '.'
-            nb_attempts += 1
-          end
+          vm_ip = bootstrap_options[:customization_spec][:ipsettings][:ip]
         end
       elsif use_ipv4_during_bootstrap?(bootstrap_options)
         vm_ip = wait_for_ipv4(bootstrap_ipv4_timeout(bootstrap_options), vm)
       else
-        vm_ip = vm.guest.ipAddress until vm_guest_ip?(vm) || Time.now.utc - start_time > timeout
+        until vm_guest_ip?(vm) || Time.now.utc - start_time > timeout
+          print '.'
+          sleep 1
+        end
+        vm_ip = vm.guest.ipAddress
       end
+
       # Then check that it is reachable
       until Time.now.utc - start_time > timeout
         print '.'
-        return vm_ip.to_s if @vm_helper.open_port?(vm_ip, @vm_helper.port, 1)
+        return vm_ip.to_s if vm_helper.open_port?(vm_ip, vm_helper.port, 1)
         sleep 1
       end
       raise "Timed out (#{timeout}s) waiting for ip #{vm_ip} to be connectable"
