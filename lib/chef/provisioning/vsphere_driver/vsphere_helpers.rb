@@ -133,7 +133,7 @@ module ChefProvisioningVsphere
       vim # ensure connection is valid
       @datacenter ||= begin
         rootFolder = vim.serviceInstance.content.rootFolder
-        dc = traverse_folders_for_dc(vim.rootFolder, datacenter_name) || abort('vSphere Datacenter not found [#{datacenter_name}]')
+        dc = traverse_folders_for_dc(vim.rootFolder, datacenter_name) || abort("vSphere Datacenter not found [#{datacenter_name}]")
       end
     end
 
@@ -259,12 +259,12 @@ module ChefProvisioningVsphere
     # @param [Subject] datastore the datastore the disk will be created on.
     # @param [Subject] size_gb the size of the disk.
     def set_additional_disks_for(vm, datastore, additional_disk_size_gb)
-      (additional_disk_size_gb.is_a?(Array) ? additional_disk_size_gb : [additional_disk_size_gb]).each do |size|
+      raise ':datastore must be specified when adding a disk to a cloned vm' if datastore.to_s.empty? && additional_disk_size_gb
+
+      Array(additional_disk_size_gb).each do |size|
         size = size.to_i
-        next if size.zero?
-        if datastore.to_s.empty?
-          raise ':datastore must be specified when adding a disk to a cloned vm'
-        end
+        next if size <= 0
+
         task = vm.ReconfigVM_Task(
           spec: RbVmomi::VIM.VirtualMachineConfigSpec(
             deviceChange: [
@@ -278,6 +278,37 @@ module ChefProvisioningVsphere
         )
         task.wait_for_completion
       end
+    end
+
+    # Mounts the an iso on the first virtual CD ROm
+    #
+    # @param [Object] vm the VM object.
+    # @param [Subject] name of the iso file
+    def set_initial_iso(vm, initial_iso_image)
+      return unless initial_iso_image
+
+      d_obj = vm.config.hardware.device.select { |hw| hw.class == RbVmomi::VIM::VirtualCdrom }.first
+      backing = RbVmomi::VIM::VirtualCdromIsoBackingInfo(fileName: initial_iso_image)
+
+      task = vm.ReconfigVM_Task(
+        spec: RbVmomi::VIM.VirtualMachineConfigSpec(
+          deviceChange: [
+            operation: :edit,
+            device: RbVmomi::VIM::VirtualCdrom(
+              backing: backing,
+              key: d_obj.key,
+              controllerKey: d_obj.controllerKey,
+              connectable: RbVmomi::VIM::VirtualDeviceConnectInfo(
+                startConnected: true,
+                connected: true,
+
+                allowGuestControl: true
+              )
+            )
+          ]
+        )
+      )
+      task.wait_for_completion
     end
 
     # Updates the main virtual disk for the VM

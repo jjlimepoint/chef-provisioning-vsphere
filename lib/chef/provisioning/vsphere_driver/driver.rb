@@ -88,7 +88,7 @@ module ChefProvisioningVsphere
       end
     end
 
-    attr_reader :connect_options, :vm_helper
+    attr_reader :connect_options
 
     # Creates a new vm_helper if not already there
     #
@@ -291,7 +291,7 @@ module ChefProvisioningVsphere
       end
 
       ## Check if true available after added nic
-      @vm_helper.open_port?(machine_spec.location['ipaddress'], @vm_helper.port) unless machine_spec.location['ipaddress'].nil?
+      vm_helper.open_port?(machine_spec.location['ipaddress'], vm_helper.port) unless machine_spec.location['ipaddress'].nil?
       machine
     end
 
@@ -312,7 +312,7 @@ module ChefProvisioningVsphere
         bootstrap_options,
         vm
       )
-      if is_windows?(vm) && !new_nics.nil? && @vm_helper.open_port?(machine_spec.location['ipaddress'], @vm_helper.port)
+      if is_windows?(vm) && !new_nics.nil? && vm_helper.open_port?(machine_spec.location['ipaddress'], vm_helper.port)
         new_nics.each do |nic|
           nic_label = nic.device.deviceInfo.label
           machine.execute_always(
@@ -687,57 +687,9 @@ module ChefProvisioningVsphere
       vm = vsphere_helper.find_vm(vm_folder, machine_name)
       add_machine_spec_location(vm, machine_spec)
 
-      additional_disk_size_gb = Array(bootstrap_options[:additional_disk_size_gb])
-
-
       vsphere_helper.update_main_disk_size_for(vm, bootstrap_options[:main_disk_size_gb])
       vsphere_helper.set_additional_disks_for(vm, bootstrap_options[:datastore], bootstrap_options[:additional_disk_size_gb])
-      if !additional_disk_size_gb.empty? && bootstrap_options[:datastore].to_s.empty?
-        raise ':datastore must be specified when adding a disk to a cloned vm'
-      end
-
-      additional_disk_size_gb.each do |size|
-        size = size.to_i
-        next if size == 0
-        task = vm.ReconfigVM_Task(
-          spec: RbVmomi::VIM.VirtualMachineConfigSpec(
-            deviceChange: [
-              vsphere_helper.virtual_disk_for(
-                vm,
-                bootstrap_options[:datastore],
-                size
-              )
-            ]
-          )
-        )
-        task.wait_for_completion
-      end
-
-
-      if bootstrap_options[:initial_iso_image]
-        d_obj = vm.config.hardware.device.select {|hw| hw.class == RbVmomi::VIM::VirtualCdrom}.first
-        backing = RbVmomi::VIM::VirtualCdromIsoBackingInfo(fileName: bootstrap_options[:initial_iso_image])
-        task = vm.ReconfigVM_Task(
-          spec: RbVmomi::VIM.VirtualMachineConfigSpec(
-            deviceChange: [
-              operation: :edit,
-              device: RbVmomi::VIM::VirtualCdrom(
-                backing: backing,
-                key: d_obj.key,
-                controllerKey: d_obj.controllerKey,
-                connectable: RbVmomi::VIM::VirtualDeviceConnectInfo(
-                  startConnected: true,
-                  connected: true,
-
-                  allowGuestControl: true
-                )
-
-              )
-            ]
-          )
-        )
-        task.wait_for_completion
-      end
+      vsphere_helper.set_initial_iso(vm, bootstrap_options[:initial_iso_file])
 
       vm
     end
@@ -818,7 +770,7 @@ module ChefProvisioningVsphere
     # @param [Object] vm The VM object from Chef-Provisioning
     # @param [Object] action_handler taken from Chef provisioning for TODO.
     def wait_for_transport(action_handler, machine_spec, machine_options, vm)
-      @vm_helper.find_port?(vm, machine_options[:bootstrap_options]) if vm_helper.port.nil?
+      vm_helper.find_port?(vm, machine_options[:bootstrap_options]) if vm_helper.port.nil?
       transport = transport_for(
         machine_spec,
         machine_options[:bootstrap_options][:ssh]
@@ -865,7 +817,7 @@ module ChefProvisioningVsphere
                         else
                           options[:winrm_transport].nil? ? :negotiate : options[:winrm_transport].to_sym
                         end
-      port = options[:port] || @vm_helper.port
+      port = options[:port] || vm_helper.port
       winrm_options = {
         user: (options[:user]).to_s,
         pass: options[:password]
@@ -939,7 +891,7 @@ module ChefProvisioningVsphere
       # Then check that it is reachable
       until Time.now.utc - start_time > timeout
         print '.'
-        return vm_ip.to_s if @vm_helper.open_port?(vm_ip, @vm_helper.port, 1)
+        return vm_ip.to_s if vm_helper.open_port?(vm_ip, vm_helper.port, 1)
         sleep 1
       end
       raise "Timed out (#{timeout}s) waiting for ip #{vm_ip} to be connectable"
