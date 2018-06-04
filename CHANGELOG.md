@@ -1,7 +1,14 @@
 # Change Log
 
-## [v2.2.0](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.2.0)
+## [v2.2.1](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.2.1)
 
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.2.0...v2.2.1)
+
+**Merged pull requests:**
+
+- Fixes bug where additional disks added twice [\#84](https://github.com/chef-partners/chef-provisioning-vsphere/pull/84) ([josh-barker](https://github.com/josh-barker))
+
+## [v2.2.0](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.2.0) (2018-06-01)
 [Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.1.0...v2.2.0)
 
 **Merged pull requests:**
