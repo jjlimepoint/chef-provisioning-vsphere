@@ -10,7 +10,7 @@ rvm:
   - ruby-head
 
 script:
-  - bundle exec rake style
+  - bundle exec rake style:chefstyle
   - bundle exec rake unit
   - bundle exec rake yard
 

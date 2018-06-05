@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'kitchen'
-require 'chef/provisioning/vsphere_driver'
-require 'chef/provisioning/machine_spec'
+require "json"
+require "kitchen"
+require "chef/provisioning/vsphere_driver"
+require "chef/provisioning/machine_spec"
 
 # Main Kitchen Module
 module Kitchen
@@ -21,14 +21,14 @@ module Kitchen
                      bootstrap_options: {
                        use_linked_clone: true,
                        ssh: {
-                         user: 'root',
+                         user: "root",
                          paranoid: false,
-                         port: 22
+                         port: 22,
                        },
                        convergence_options: {},
                        customization_spec: {
-                         domain: 'local'
-                       }
+                         domain: "local",
+                       },
                      }
 
       default_config(:vsphere_name) do |driver|
@@ -53,8 +53,8 @@ module Kitchen
           ensure
             if machine_spec
               if machine_spec.location
-                state[:server_id] = machine_spec.location['server_id']
-                state[:hostname] = machine_spec.location['ipaddress']
+                state[:server_id] = machine_spec.location["server_id"]
+                state[:hostname] = machine_spec.location["ipaddress"]
               end
               machine_spec.save(action_handler)
             end
@@ -69,8 +69,8 @@ module Kitchen
         return if state[:server_id].nil?
 
         with_provisioning_driver(state) do |action_handler, driver, machine_spec|
-          machine_spec.location = { 'driver_url' => driver.driver_url,
-                                    'server_id' => state[:server_id] }
+          machine_spec.location = { "driver_url" => driver.driver_url,
+                                    "server_id" => state[:server_id] }
           driver.destroy_machine(action_handler, machine_spec, config[:machine_options])
         end
 
@@ -103,7 +103,7 @@ module Kitchen
             unless @@chef_zero_server
               Chef::Config.local_mode = true
               Chef::Config.chef_repo_path = Chef::Config.find_chef_repo_path(Dir.pwd)
-              require 'chef/local_mode'
+              require "chef/local_mode"
               Chef::LocalMode.setup_server_connectivity
               @@chef_zero_server = true
             end

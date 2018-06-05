@@ -1,6 +1,6 @@
 # frozen_string_literal: true
-require 'chef/provisioning/vsphere_driver'
-require 'chef/provisioning/machine_spec'
+require "chef/provisioning/vsphere_driver"
+require "chef/provisioning/machine_spec"
 
 # A file named config.rb in the same directory as this spec file
 # must exist containing the driver options to use for the test.
@@ -34,12 +34,12 @@ require 'chef/provisioning/machine_spec'
 #   }
 # }
 
-describe 'vsphere_driver' do
+describe "vsphere_driver" do
   before :all do
-    skip('driver options do not exist') unless File.exist?(File.expand_path('../config.rb', __FILE__))
+    skip("driver options do not exist") unless File.exist?(File.expand_path("../config.rb", __FILE__))
 
     @vm_name = "cmvd-test-#{SecureRandom.hex}"
-    @metal_config = eval File.read(File.expand_path('../config.rb', __FILE__))
+    @metal_config = eval File.read(File.expand_path("../config.rb", __FILE__))
     Cheffish.honor_local_mode do
       Chef::Log.level = :debug
       chef_server = Cheffish.default_chef_server
@@ -50,7 +50,7 @@ describe 'vsphere_driver' do
       @driver.allocate_machine(action_handler, @machine_spec, @metal_config[:machine_options])
       @metal_config[:machine_options][:convergence_options] = { chef_server: chef_server }
       machine = @driver.ready_machine(action_handler, @machine_spec, @metal_config[:machine_options])
-      @server_id = @machine_spec.location['server_id']
+      @server_id = @machine_spec.location["server_id"]
       @vsphere_helper = ChefProvisioningVsphere::VsphereHelper.new(
         @metal_config[:driver_options],
         @metal_config[:machine_options][:bootstrap_options][:datacenter]
@@ -59,88 +59,88 @@ describe 'vsphere_driver' do
     end
   end
 
-  context 'when allocating a machine' do
-    it 'adds machine to the correct folder' do
+  context "when allocating a machine" do
+    it "adds machine to the correct folder" do
       expect(@vm.parent.name).to eq(@metal_config[:machine_options][:bootstrap_options][:vm_folder])
     end
-    it 'has a matching id with the machine_spec' do
-      expect(@vm.config.instanceUuid).to eq(@machine_spec.location['server_id'])
+    it "has a matching id with the machine_spec" do
+      expect(@vm.config.instanceUuid).to eq(@machine_spec.location["server_id"])
     end
-    it 'has the correct name' do
+    it "has the correct name" do
       custom_name = @metal_config[:machine_options][:bootstrap_options][:customization_spec][:hostname]
       now = Time.now.utc
       trimmed_name = if custom_name
-                       @vm.config.guestId.start_with?('win') ? custom_name.to_s.byteslice(0, 15) : custom_name
+                       @vm.config.guestId.start_with?("win") ? custom_name.to_s.byteslice(0, 15) : custom_name
                      else
-                       @vm.config.guestId.start_with?('win') ? @vm_name.byteslice(0, 15) : @vm_name
+                       @vm.config.guestId.start_with?("win") ? @vm_name.byteslice(0, 15) : @vm_name
                      end
       expected_name = "#{trimmed_name}.#{@metal_config[:machine_options][:bootstrap_options][:customization_spec][:domain]}"
-      if @vm.config.guestId.start_with?('win')
+      if @vm.config.guestId.start_with?("win")
         until (Time.now.utc - now) > 30 || expected_name.to_s.include?(@vm.guest.hostName)
-          print '.'
+          print "."
           sleep 5
         end
         expect(expected_name).to include(@vm.guest.hostName)
       else
         until (Time.now.utc - now) > 30 || (@vm.guest.hostName == expected_name)
-          print '.'
+          print "."
           sleep 5
         end
         expect(@vm.guest.hostName).to eq(expected_name) # For linux Systems
       end
     end
-    it 'is on the correct networks' do
-      expect(@vm.network.map(&:name)).to include(@metal_config[:machine_options][:bootstrap_options][:network_name][0]) unless @vm.config.guestId.start_with?('win')
-      expect(@vm.network.map(&:name)).to include(@metal_config[:machine_options][:bootstrap_options][:network_name][1]) unless @vm.config.guestId.start_with?('win')
+    it "is on the correct networks" do
+      expect(@vm.network.map(&:name)).to include(@metal_config[:machine_options][:bootstrap_options][:network_name][0]) unless @vm.config.guestId.start_with?("win")
+      expect(@vm.network.map(&:name)).to include(@metal_config[:machine_options][:bootstrap_options][:network_name][1]) unless @vm.config.guestId.start_with?("win")
     end
-    it 'is on the correct datastore' do
-      expect(@vm.datastore[0].name).to eq(@metal_config[:machine_options][:bootstrap_options][:datastore]) unless @vm.config.guestId.start_with?('win')
+    it "is on the correct datastore" do
+      expect(@vm.datastore[0].name).to eq(@metal_config[:machine_options][:bootstrap_options][:datastore]) unless @vm.config.guestId.start_with?("win")
     end
-    it 'is in the correct datacenter' do
-      expect(@vsphere_helper.vim.serviceInstance.find_datacenter(@metal_config[:machine_options][:bootstrap_options][:datacenter]).find_vm("#{@vm.parent.name}/#{@vm_name}")).not_to eq(nil) unless @vm.config.guestId.start_with?('win')
+    it "is in the correct datacenter" do
+      expect(@vsphere_helper.vim.serviceInstance.find_datacenter(@metal_config[:machine_options][:bootstrap_options][:datacenter]).find_vm("#{@vm.parent.name}/#{@vm_name}")).not_to eq(nil) unless @vm.config.guestId.start_with?("win")
     end
-    it 'has an added disk of the correct size' do
+    it "has an added disk of the correct size" do
       disk_count = @vm.disks.count
-      expect(@vm.disks[disk_count - 1].capacityInKB).to eq(@metal_config[:machine_options][:bootstrap_options][:additional_disk_size_gb][1] * 1024 * 1024) unless @vm.config.guestId.start_with?('win')
+      expect(@vm.disks[disk_count - 1].capacityInKB).to eq(@metal_config[:machine_options][:bootstrap_options][:additional_disk_size_gb][1] * 1024 * 1024) unless @vm.config.guestId.start_with?("win")
     end
-    it 'has the correct number of CPUs' do
+    it "has the correct number of CPUs" do
       expect(@vm.config.hardware.numCPU).to eq(@metal_config[:machine_options][:bootstrap_options][:num_cpus])
     end
-    it 'has the correct amount of memory' do
+    it "has the correct amount of memory" do
       expect(@vm.config.hardware.memoryMB).to eq(@metal_config[:machine_options][:bootstrap_options][:memory_mb])
     end
-    it 'is in the correct resource pool' do
+    it "is in the correct resource pool" do
       if @metal_config[:machine_options][:bootstrap_options].key?(:resource_pool)
-        expect(@vm.resourcePool.name).to eq(@metal_config[:machine_options][:bootstrap_options][:resource_pool].split('/')[1])
+        expect(@vm.resourcePool.name).to eq(@metal_config[:machine_options][:bootstrap_options][:resource_pool].split("/")[1])
       end
     end
-    it 'is in the correct host' do
+    it "is in the correct host" do
       if @metal_config[:machine_options][:bootstrap_options].key?(:host)
-        expect(@vm.runtime.host.name).to eq(@metal_config[:machine_options][:bootstrap_options][:host].split('/').last)
+        expect(@vm.runtime.host.name).to eq(@metal_config[:machine_options][:bootstrap_options][:host].split("/").last)
       end
     end
-    it 'is in the correct cluster' do
+    it "is in the correct cluster" do
       if @metal_config[:machine_options][:bootstrap_options].key?(:resource_pool)
-        expect(@vm.resourcePool.owner.name).to eq(@metal_config[:machine_options][:bootstrap_options][:resource_pool].split('/')[0])
+        expect(@vm.resourcePool.owner.name).to eq(@metal_config[:machine_options][:bootstrap_options][:resource_pool].split("/")[0])
       end
     end
-    it 'has the correct number of disks' do
-      expect(@vm.disks.count).to eq(3) unless @vm.config.guestId.start_with?('win')
+    it "has the correct number of disks" do
+      expect(@vm.disks.count).to eq(3) unless @vm.config.guestId.start_with?("win")
     end
-    it 'has hot add cpu enabled' do
+    it "has hot add cpu enabled" do
       expect(@vm.config.cpuHotAddEnabled).to eq(true)
     end
-    it 'has hot remove cpu enabled' do
+    it "has hot remove cpu enabled" do
       expect(@vm.config.cpuHotRemoveEnabled).to eq(true)
     end
-    it 'has hot add memory enabled' do
+    it "has hot add memory enabled" do
       expect(@vm.config.memoryHotAddEnabled).to eq(true)
     end
-    it 'has the correct static IP address' do
+    it "has the correct static IP address" do
       if @metal_config[:machine_options][:bootstrap_options][:customization_spec][:ipsettings][:ip]
         now = Time.now.utc
-        until (Time.now.utc - now) > 30 || (@vm.guest.toolsRunningStatus == 'guestToolsRunning' && @vm.guest.net.count == 2 && @vm.guest.net[1].ipAddress[1] == @metal_config[:machine_options][:bootstrap_options][:customization_spec][:ipsettings][:ip])
-          print '.'
+        until (Time.now.utc - now) > 30 || (@vm.guest.toolsRunningStatus == "guestToolsRunning" && @vm.guest.net.count == 2 && @vm.guest.net[1].ipAddress[1] == @metal_config[:machine_options][:bootstrap_options][:customization_spec][:ipsettings][:ip])
+          print "."
           sleep 5
         end
         expect(@vm.guest.net.map(&:ipAddress).flatten).to include(@metal_config[:machine_options][:bootstrap_options][:customization_spec][:ipsettings][:ip])
@@ -148,8 +148,8 @@ describe 'vsphere_driver' do
     end
   end
 
-  context 'destroy_machine' do
-    it 'removes the machine' do
+  context "destroy_machine" do
+    it "removes the machine" do
       Cheffish.honor_local_mode do
         chef_server = Cheffish.default_chef_server
         url = URI::VsphereUrl.from_config(@metal_config[:driver_options]).to_s
@@ -158,8 +158,8 @@ describe 'vsphere_driver' do
         machine_spec = Chef::Provisioning.chef_managed_entry_store(chef_server)
                                          .new_entry(:machine, @vm_name)
         machine_spec.location = {
-          'driver_url' => driver.driver_url,
-          'server_id' => @server_id
+          "driver_url" => driver.driver_url,
+          "server_id" => @server_id,
         }
         driver.destroy_machine(
           action_handler,

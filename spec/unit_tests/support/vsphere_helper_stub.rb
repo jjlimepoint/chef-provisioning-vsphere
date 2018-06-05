@@ -6,7 +6,7 @@ module ChefProvisioningVsphereStubs
     def network_device_changes(_action_handler, _vm_template, _options)
       [
         [RbVmomi::VIM::VirtualDeviceConfigSpec.new],
-        [RbVmomi::VIM::VirtualDeviceConfigSpec.new]
+        [RbVmomi::VIM::VirtualDeviceConfigSpec.new],
       ]
     end
 
@@ -45,7 +45,7 @@ module RbVmomi
     attr_reader :resourcePool
 
     def resourcePool
-      @resourcePool ||= RbVmomi::VIM::ResourcePool.new(nil, nil)
+      @resourcePool ||= RbVmomi::VIM::ResourcePool.new(nil, nil) # rubocop:disable Style/VariableName
     end
   end
 end

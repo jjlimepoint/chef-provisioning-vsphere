@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'rbvmomi'
-require 'uri'
-require 'net/http'
+require "rbvmomi"
+require "uri"
+require "net/http"
 
 # Provisions machines in vSphere.
 module ChefProvisioningVsphere
@@ -71,7 +71,7 @@ module ChefProvisioningVsphere
     # @param [Object] _wait_on_port Defaults to port 22, to connect and verify it's up.
     def start_vm(vm, _wait_on_port = 22)
       state = vm.runtime.powerState
-      vm.PowerOnVM_Task.wait_for_completion unless state == 'poweredOn'
+      vm.PowerOnVM_Task.wait_for_completion unless state == "poweredOn"
     end
 
     # Stops the VM
@@ -80,12 +80,12 @@ module ChefProvisioningVsphere
     # @param [Object] timeout Defaults to 600 seconds or 10 mins before giving up.
     def stop_vm(vm, timeout = 600)
       start = Time.now.utc
-      return if vm.runtime.powerState == 'poweredOff'
+      return if vm.runtime.powerState == "poweredOff"
       begin
         vm.ShutdownGuest
         until (Time.now.utc - start) > timeout ||
-              vm.runtime.powerState == 'poweredOff'
-          print '.'
+            vm.runtime.powerState == "poweredOff"
+          print "."
           sleep 2
         end
       rescue
@@ -100,9 +100,9 @@ module ChefProvisioningVsphere
     def find_folder(folder_name)
       base = datacenter.vmFolder
       unless folder_name.nil?
-        folder_name.split('/').reject(&:empty?).each do |item|
+        folder_name.split("/").reject(&:empty?).each do |item|
           base = base.find(item, RbVmomi::VIM::Folder) ||
-                 raise("vSphere Folder not found [#{folder_name}]")
+            raise("vSphere Folder not found [#{folder_name}]")
         end
       end
       base
@@ -132,7 +132,7 @@ module ChefProvisioningVsphere
     def datacenter
       vim # ensure connection is valid
       @datacenter ||= begin
-        rootFolder = vim.serviceInstance.content.rootFolder
+        rootFolder = vim.serviceInstance.content.rootFolder # rubocop:disable Style/VariableName
         dc = traverse_folders_for_dc(vim.rootFolder, datacenter_name) || abort("vSphere Datacenter not found [#{datacenter_name}]")
       end
     end
@@ -152,7 +152,7 @@ module ChefProvisioningVsphere
       )
       device = RbVmomi::VIM::VirtualVmxnet3(
         backing: backing_info,
-        deviceInfo: RbVmomi::VIM::Description(label: network_label, summary: network_name.split('/').last),
+        deviceInfo: RbVmomi::VIM::Description(label: network_label, summary: network_name.split("/").last),
         key: device_key,
         connectable: connectable
       )
@@ -176,14 +176,14 @@ module ChefProvisioningVsphere
     # @param [Object] options the options from Chef Provisioning to help configure the VM.
     # @param [Object] vm the actual VM object to connect the VM to.
     def add_extra_nic(action_handler, vm_template, options, vm)
-      deviceAdditions, changes = network_device_changes(action_handler, vm_template, options)
+      deviceAdditions, changes = network_device_changes(action_handler, vm_template, options) # rubocop:disable Style/VariableName
 
-      if deviceAdditions.count.positive?
+      if deviceAdditions.count > 0
         current_networks = find_ethernet_cards_for(vm).map { |card| network_id_for(card.backing) }
         new_devices = deviceAdditions.reject { |device| current_networks.include?(network_id_for(device.device.backing)) }
 
-        if new_devices.count.positive?
-          action_handler.report_progress 'Adding extra NICs'
+        if new_devices.count > 0
+          action_handler.report_progress "Adding extra NICs"
           task = vm.ReconfigVM_Task(spec: RbVmomi::VIM.VirtualMachineConfigSpec(deviceChange: new_devices))
           task.wait_for_completion
           new_devices
@@ -212,7 +212,7 @@ module ChefProvisioningVsphere
           deviceChange: [
             {
               operation: :remove,
-              device: disk
+              device: disk,
             },
             {
               operation: :add,
@@ -221,9 +221,9 @@ module ChefProvisioningVsphere
                 new_disk.backing = new_disk.backing.dup
                 new_disk.backing.fileName = "[#{disk.backing.datastore.name}]"
                 new_disk.backing.parent = disk.backing
-              end
-            }
-          ]
+              end,
+            },
+          ],
         }
         vm_template.ReconfigVM_Task(spec: spec).wait_for_completion
       end
@@ -243,7 +243,7 @@ module ChefProvisioningVsphere
           key: idx,
           backing: RbVmomi::VIM.VirtualDiskFlatVer2BackingInfo(
             fileName: "[#{datastore}]",
-            diskMode: 'persistent',
+            diskMode: "persistent",
             thinProvisioned: true
           ),
           capacityInKB: size_gb * 1024 * 1024,
@@ -259,7 +259,7 @@ module ChefProvisioningVsphere
     # @param [Subject] datastore the datastore the disk will be created on.
     # @param [Subject] size_gb the size of the disk.
     def set_additional_disks_for(vm, datastore, additional_disk_size_gb)
-      raise ':datastore must be specified when adding a disk to a cloned vm' if datastore.to_s.empty? && additional_disk_size_gb
+      raise ":datastore must be specified when adding a disk to a cloned vm" if datastore.to_s.empty? && additional_disk_size_gb
 
       Array(additional_disk_size_gb).each do |size|
         size = size.to_i
@@ -272,7 +272,7 @@ module ChefProvisioningVsphere
                 vm,
                 datastore,
                 size
-              )
+              ),
             ]
           )
         )
@@ -304,7 +304,7 @@ module ChefProvisioningVsphere
 
                 allowGuestControl: true
               )
-            )
+            ),
           ]
         )
       )
@@ -333,8 +333,8 @@ module ChefProvisioningVsphere
           deviceChange: [
             {
               operation: :edit,
-              device: disk
-            }
+              device: disk,
+            },
           ]
         )
       ).wait_for_completion
@@ -359,14 +359,14 @@ module ChefProvisioningVsphere
         backing_info = backing_info_for(action_handler, networks[i])
         if card = cards.shift
           key = card.key
-          operation = RbVmomi::VIM::VirtualDeviceConfigSpecOperation('edit')
+          operation = RbVmomi::VIM::VirtualDeviceConfigSpecOperation("edit")
           action_handler.report_progress "changing template nic for #{networks[i]}"
           changes.push(
             network_adapter_for(operation, networks[i], label, key, backing_info)
           )
         else
           key += 1
-          operation = RbVmomi::VIM::VirtualDeviceConfigSpecOperation('add')
+          operation = RbVmomi::VIM::VirtualDeviceConfigSpecOperation("add")
           action_handler.report_progress "will be adding nic for #{networks[i]}"
           additions.push(
             network_adapter_for(operation, networks[i], label, key, backing_info)
@@ -381,7 +381,7 @@ module ChefProvisioningVsphere
     # @param [Object] action_handler TODO
     # @param [String] network_name The network name to attach to
     def backing_info_for(action_handler, network_name)
-      action_handler.report_progress('finding networks...')
+      action_handler.report_progress("finding networks...")
       network = find_network(network_name)
       action_handler.report_progress(
         "network: #{network_name} is a #{network.class}"
@@ -396,7 +396,7 @@ module ChefProvisioningVsphere
         )
       else
         RbVmomi::VIM::VirtualEthernetCardNetworkBackingInfo(
-          deviceName: network_name.split('/').last
+          deviceName: network_name.split("/").last
         )
       end
     end
@@ -413,11 +413,11 @@ module ChefProvisioningVsphere
     # @param [String] name The name of the "thing."
     # @param [String] parent_folder The name of the folder to start from.
     def find_entity(name, parent_folder)
-      parts = name.split('/').reject(&:empty?)
+      parts = name.split("/").reject(&:empty?)
       parts.each do |item|
         Chef::Log.debug("Identifying entity part: #{item} in folder type: #{parent_folder.class}")
         if parent_folder.is_a? RbVmomi::VIM::Folder
-          Chef::Log.debug('Parent folder is a folder')
+          Chef::Log.debug("Parent folder is a folder")
           parent_folder = parent_folder.childEntity.find { |f| f.name == item }
         else
           parent_folder = yield(parent_folder, item)
@@ -481,7 +481,7 @@ module ChefProvisioningVsphere
     # @param [String] name Name of the Network.
     def find_network(name)
       base = datacenter.networkFolder
-      entity_array = name.split('/').reject(&:empty?)
+      entity_array = name.split("/").reject(&:empty?)
       entity_array.each do |item|
         base = traverse_folders_for_network(base, item)
       end
@@ -548,8 +548,8 @@ module ChefProvisioningVsphere
 
       req = Net::HTTP::Put.new("#{uri.path}?#{uri.query}")
       req.body_stream = File.open(local)
-      req['Content-Type'] = 'application/octet-stream'
-      req['Content-Length'] = size
+      req["Content-Type"] = "application/octet-stream"
+      req["Content-Length"] = size
       res = http.request(req)
       unless res.is_a?(Net::HTTPSuccess)
         raise "Error: #{res.inspect} :: #{res.body} :: sending #{local} to #{remote} at #{vm.name} via #{endpoint} with a size of #{size}"
