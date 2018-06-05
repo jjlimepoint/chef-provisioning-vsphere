@@ -23,12 +23,12 @@ module Kitchen
                        ssh: {
                          user: 'root',
                          paranoid: false,
-                         port: 22,
+                         port: 22
                        },
                        convergence_options: {},
                        customization_spec: {
-                         domain: 'local',
-                       },
+                         domain: 'local'
+                       }
                      }
 
       default_config(:vsphere_name) do |driver|
