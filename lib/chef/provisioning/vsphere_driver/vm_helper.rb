@@ -17,12 +17,6 @@ module ChefProvisioningVsphere
       Timeout::Error, IPAddr::AddressFamilyError
     ].freeze
 
-    # If the IP is true
-    #
-    def ip?
-      @ip
-    end
-
     # If the port is true
     #
     def port?
