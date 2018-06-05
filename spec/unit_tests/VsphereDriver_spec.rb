@@ -131,11 +131,11 @@ describe ChefProvisioningVsphere::VsphereDriver do
     end
   end
 
-  context "#ip_to_bootstrap" do
+  context '#ip_to_bootstrap' do
     let(:metal_config) { {} }
-    let(:vm) { double("vm") }
+    let(:vm) { double('vm') }
     let(:vm_helper) do
-      double("vm_helper")
+      double('vm_helper')
     end
     before do
       allow_any_instance_of(Kernel).to receive(:print)
@@ -151,72 +151,72 @@ describe ChefProvisioningVsphere::VsphereDriver do
 
     let(:port) { 22 }
     let(:bootstrap_conf) { {} }
-    
-    context "has_static_ip" do
-      let(:bootstrap_conf) { { customization_spec: "some spec" } }
-      context "customization_spec is named" do
-        let(:vsphere_helper) { double("vsphere_helper") }
-        let(:fake_spec) { double("fake_spec") }
-        let(:fake_adapter) { double("fake_adapter") }
+
+    context 'has_static_ip' do
+      let(:bootstrap_conf) { { customization_spec: 'some spec' } }
+      context 'customization_spec is named' do
+        let(:vsphere_helper) { double('vsphere_helper') }
+        let(:fake_spec) { double('fake_spec') }
+        let(:fake_adapter) { double('fake_adapter') }
         let(:fake_ip) do
           RbVmomi::VIM::CustomizationFixedIp(
-            ipAddress: "1.1.1.1"
+            ipAddress: '1.1.1.1'
           )
         end
 
-        it "return ip address" do
+        it 'return ip address' do
           allow(subject).to receive(:vsphere_helper).and_return(vsphere_helper)
           allow(fake_adapter).to receive_message_chain(:adapter, :ip).and_return(fake_ip)
           allow(fake_spec).to receive(:nicSettingMap).and_return([fake_adapter])
           allow(vsphere_helper).to receive(:find_customization_spec).and_return(fake_spec)
-          allow(vm_helper).to receive(:open_port?).with("1.1.1.1", port, 1).and_return(true)
+          allow(vm_helper).to receive(:open_port?).with('1.1.1.1', port, 1).and_return(true)
 
           result = subject.send :ip_to_bootstrap, bootstrap_conf, vm
-          expect(result).to eq "1.1.1.1"
+          expect(result).to eq '1.1.1.1'
         end
       end
 
-      context "customization_spec has an ip address" do
+      context 'customization_spec has an ip address' do
         let(:bootstrap_conf) do
-          { 
+          {
             customization_spec: {
               ipsettings: {
-                ip: "2.2.2.2"
+                ip: '2.2.2.2'
               }
-            } 
+            }
           }
         end
 
-        it "returns ip address" do
+        it 'returns ip address' do
           allow(vm_helper).to receive(:ip?)
-          allow(vm_helper).to receive(:open_port?).with("2.2.2.2", port, 1).and_return(true)
+          allow(vm_helper).to receive(:open_port?).with('2.2.2.2', port, 1).and_return(true)
           result = subject.send :ip_to_bootstrap, bootstrap_conf, vm
-          expect(result).to eq "2.2.2.2"
+          expect(result).to eq '2.2.2.2'
         end
       end
     end
 
-    context "use_ipv4_during_bootstrap" do
+    context 'use_ipv4_during_bootstrap' do
       let(:bootstrap_conf) { { bootstrap_ipv4: true } }
 
-      it "returns ip address" do
-        allow(subject).to receive(:wait_for_ipv4).and_return("3.3.3.3")
-        allow(vm_helper).to receive(:open_port?).with("3.3.3.3", port, 1).and_return(true)
+      it 'returns ip address' do
+        allow(subject).to receive(:wait_for_ipv4).and_return('3.3.3.3')
+        allow(vm_helper).to receive(:open_port?).with('3.3.3.3', port, 1).and_return(true)
 
         result = subject.send :ip_to_bootstrap, bootstrap_conf, vm
-        expect(result).to eq "3.3.3.3"
+        expect(result).to eq '3.3.3.3'
       end
     end
 
-    context "wait until guest tools returns an IP address" do
-      it "returns ip address" do
+    context 'wait until guest tools returns an IP address' do
+      it 'returns ip address' do
         allow_any_instance_of(Kernel).to receive(:sleep)
         expect(subject).to receive(:vm_guest_ip?).exactly(3).times.and_return(false, false, true)
-        allow(vm).to receive_message_chain(:guest, :ipAddress).and_return("4.4.4.4")
+        allow(vm).to receive_message_chain(:guest, :ipAddress).and_return('4.4.4.4')
 
-        allow(vm_helper).to receive(:open_port?).exactly(1).times.with("4.4.4.4", port, 1).and_return(true)
+        allow(vm_helper).to receive(:open_port?).exactly(1).times.with('4.4.4.4', port, 1).and_return(true)
         result = subject.send :ip_to_bootstrap, bootstrap_conf, vm
-        expect(result).to eq "4.4.4.4"
+        expect(result).to eq '4.4.4.4'
       end
     end
   end

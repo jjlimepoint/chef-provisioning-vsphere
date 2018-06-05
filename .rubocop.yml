@@ -1,10 +1,1 @@
-AllCops:
-  Exclude:
-    - "spec/**/*"
-    - "vendor/**/*"
-    - "pkg/**/*"
-    - "vsphere_testing/**/*"
-    - "examples/**/*"
-    - "spec/unit/plugins/darwin/system_profiler_output.rb"
-
 inherit_from: .rubocop_todo.yml

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'chef/provisioning/vsphere_driver'
 
 describe ChefProvisioningVsphere::VsphereHelper do
@@ -11,9 +12,9 @@ describe ChefProvisioningVsphere::VsphereHelper do
   let(:vm) { vm = double('vm') }
   let(:task) { double('task', wait_for_completion: true) }
 
-  describe '#set_additional_disks_for' do    
+  describe '#set_additional_disks_for' do
     before do
-      allow(vm).to receive(:disks).and_return(['root_disk'], ['root_disk', 'first_disk'])
+      allow(vm).to receive(:disks).and_return(['root_disk'], %w(root_disk first_disk))
     end
 
     context 'when datastore is missing' do
@@ -38,7 +39,7 @@ describe ChefProvisioningVsphere::VsphereHelper do
       let(:datastore) { 'some datastore' }
       let(:disk_1) do
         {
-            spec: RbVmomi::VIM.VirtualMachineConfigSpec(
+          spec: RbVmomi::VIM.VirtualMachineConfigSpec(
             deviceChange: [
               RbVmomi::VIM::VirtualDeviceConfigSpec(
                 operation: :add,
@@ -62,7 +63,7 @@ describe ChefProvisioningVsphere::VsphereHelper do
 
       let(:disk_2) do
         {
-            spec: RbVmomi::VIM.VirtualMachineConfigSpec(
+          spec: RbVmomi::VIM.VirtualMachineConfigSpec(
             deviceChange: [
               RbVmomi::VIM::VirtualDeviceConfigSpec(
                 operation: :add,
@@ -135,10 +136,9 @@ describe ChefProvisioningVsphere::VsphereHelper do
   describe '#set_initial_iso' do
     let(:cd_rom) do
       double('cd_rom',
-        class: RbVmomi::VIM::VirtualCdrom,
-        key: 'some key',
-        controllerKey: 'some controller key'
-      )
+             class: RbVmomi::VIM::VirtualCdrom,
+             key: 'some key',
+             controllerKey: 'some controller key')
     end
 
     let(:fake_backing) do
@@ -146,7 +146,7 @@ describe ChefProvisioningVsphere::VsphereHelper do
     end
 
     let(:iso_spec) do
-      { 
+      {
         spec: RbVmomi::VIM.VirtualMachineConfigSpec(
           deviceChange: [
             operation: :edit,
@@ -167,7 +167,7 @@ describe ChefProvisioningVsphere::VsphereHelper do
 
     before do
       allow(vm).to receive_message_chain(:config, :hardware, :device)
-      .and_return([cd_rom])
+        .and_return([cd_rom])
     end
 
     it 'does nothing when no iso' do
