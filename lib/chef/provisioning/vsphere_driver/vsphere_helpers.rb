@@ -58,7 +58,7 @@ module ChefProvisioningVsphere
     #
     # @param [String] uuid the UUID of the machine
     def find_vm_by_id(uuid)
-      vm = vim.searchIndex.FindByUuid( # rubocop:disable Naming/VariableName, Lint/UselessAssignmentb
+      vm = vim.searchIndex.FindByUuid( # rubocop:disable Naming/VariableName, Lint/UselessAssignment
         uuid: uuid,
         vmSearch: true,
         instanceUuid: true
