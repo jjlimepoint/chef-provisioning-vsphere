@@ -45,7 +45,7 @@ module RbVmomi
     attr_reader :resourcePool
 
     def resourcePool # rubocop:disable Lint/DuplicateMethods
-      @resourcePool ||= RbVmomi::VIM::ResourcePool.new(nil, nil) # rubocop:disable Style/VariableName
+      @resourcePool ||= RbVmomi::VIM::ResourcePool.new(nil, nil) # rubocop:disable Naming/VariableName
     end
   end
 end
