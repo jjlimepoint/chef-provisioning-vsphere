@@ -34,7 +34,7 @@ module RbVmomi
   class VIM::HostSystem
     attr_reader :parent
 
-    def parent
+    def parent # rubocop:disable Lint/DuplicateMethods
       @parent ||= RbVmomi::VIM::ComputeResource.new
     end
   end
@@ -44,7 +44,7 @@ module RbVmomi
   class VIM::ComputeResource
     attr_reader :resourcePool
 
-    def resourcePool
+    def resourcePool # rubocop:disable Lint/DuplicateMethods
       @resourcePool ||= RbVmomi::VIM::ResourcePool.new(nil, nil) # rubocop:disable Style/VariableName
     end
   end

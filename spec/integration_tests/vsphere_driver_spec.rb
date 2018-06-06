@@ -39,7 +39,7 @@ describe "vsphere_driver" do
     skip("driver options do not exist") unless File.exist?(File.expand_path("../config.rb", __FILE__))
 
     @vm_name = "cmvd-test-#{SecureRandom.hex}"
-    @metal_config = eval File.read(File.expand_path("../config.rb", __FILE__))
+    @metal_config = eval File.read(File.expand_path("../config.rb", __FILE__)) # rubocop:disable Security/Eval
     Cheffish.honor_local_mode do
       Chef::Log.level = :debug
       chef_server = Cheffish.default_chef_server
@@ -49,7 +49,7 @@ describe "vsphere_driver" do
       action_handler = Chef::Provisioning::ActionHandler.new
       @driver.allocate_machine(action_handler, @machine_spec, @metal_config[:machine_options])
       @metal_config[:machine_options][:convergence_options] = { chef_server: chef_server }
-      machine = @driver.ready_machine(action_handler, @machine_spec, @metal_config[:machine_options])
+      machine = @driver.ready_machine(action_handler, @machine_spec, @metal_config[:machine_options]) # rubocop:disable Lint/UselessAssignment
       @server_id = @machine_spec.location["server_id"]
       @vsphere_helper = ChefProvisioningVsphere::VsphereHelper.new(
         @metal_config[:driver_options],
