@@ -9,7 +9,7 @@ describe ChefProvisioningVsphere::VsphereHelper do
     }
     ChefProvisioningVsphere::VsphereHelper.new(connection_opts, "fake datacenter")
   end
-  let(:vm) { vm = double("vm") }
+  let(:vm) { vm = double("vm") } # rubocop:disable Lint/UselessAssignment
   let(:task) { double("task", wait_for_completion: true) }
 
   describe "#set_additional_disks_for" do

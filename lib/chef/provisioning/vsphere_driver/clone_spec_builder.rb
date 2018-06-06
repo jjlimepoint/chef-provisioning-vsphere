@@ -43,7 +43,7 @@ module ChefProvisioningVsphere
       end
 
       unless options[:network_name].nil?
-        deviceAdditions, changes = vsphere_helper.network_device_changes( # rubocop:disable Style/VariableName
+        deviceAdditions, changes = vsphere_helper.network_device_changes( # rubocop:disable Naming/VariableName, Lint/UselessAssignment
           action_handler,
           vm_template,
           options

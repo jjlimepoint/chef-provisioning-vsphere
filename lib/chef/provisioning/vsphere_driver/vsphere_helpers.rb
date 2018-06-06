@@ -58,7 +58,7 @@ module ChefProvisioningVsphere
     #
     # @param [String] uuid the UUID of the machine
     def find_vm_by_id(uuid)
-      vm = vim.searchIndex.FindByUuid(
+      vm = vim.searchIndex.FindByUuid( # rubocop:disable Naming/VariableName, Lint/UselessAssignment
         uuid: uuid,
         vmSearch: true,
         instanceUuid: true
@@ -132,8 +132,8 @@ module ChefProvisioningVsphere
     def datacenter
       vim # ensure connection is valid
       @datacenter ||= begin
-        rootFolder = vim.serviceInstance.content.rootFolder # rubocop:disable Style/VariableName
-        dc = traverse_folders_for_dc(vim.rootFolder, datacenter_name) || abort("vSphere Datacenter not found [#{datacenter_name}]")
+        rootFolder = vim.serviceInstance.content.rootFolder # rubocop:disable Naming/VariableName, Lint/UselessAssignment
+        dc = traverse_folders_for_dc(vim.rootFolder, datacenter_name) || abort("vSphere Datacenter not found [#{datacenter_name}]") # rubocop:disable Naming/VariableName, Lint/UselessAssignment
       end
     end
 
@@ -176,7 +176,7 @@ module ChefProvisioningVsphere
     # @param [Object] options the options from Chef Provisioning to help configure the VM.
     # @param [Object] vm the actual VM object to connect the VM to.
     def add_extra_nic(action_handler, vm_template, options, vm)
-      deviceAdditions, changes = network_device_changes(action_handler, vm_template, options) # rubocop:disable Style/VariableName
+      deviceAdditions, changes = network_device_changes(action_handler, vm_template, options) # rubocop:disable Naming/VariableName, Lint/UselessAssignment
 
       if deviceAdditions.count > 0
         current_networks = find_ethernet_cards_for(vm).map { |card| network_id_for(card.backing) }
@@ -357,7 +357,7 @@ module ChefProvisioningVsphere
       networks.each_index do |i|
         label = "Ethernet #{i + 1}"
         backing_info = backing_info_for(action_handler, networks[i])
-        if card = cards.shift
+        if card = cards.shift # rubocop:disable Lint/AssignmentInCondition
           key = card.key
           operation = RbVmomi::VIM::VirtualDeviceConfigSpecOperation("edit")
           action_handler.report_progress "changing template nic for #{networks[i]}"
