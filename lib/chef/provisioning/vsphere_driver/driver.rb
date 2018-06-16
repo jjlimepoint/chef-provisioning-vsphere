@@ -56,7 +56,8 @@ module ChefProvisioningVsphere
     #
     # @param [Object] hash_like converts to key:value
     def deep_symbolize(hash_like)
-      return {} if hash_like.nil? || hash_like.empty?
+      return {} if hash_like.nil?
+
       r = {}
       hash_like.each do |key, value|
         value = deep_symbolize(value) if value.respond_to?(:values)
