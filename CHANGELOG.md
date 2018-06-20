@@ -1,7 +1,16 @@
 # Change Log
 
-## [v2.2.2](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.2.2)
+## [v2.3.0](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.3.0)
 
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.2.2...v2.3.0)
+
+**Merged pull requests:**
+
+- Fix missing\_method deprecation from Cheffish::MergedConfig [\#88](https://github.com/chef-partners/chef-provisioning-vsphere/pull/88) ([josh-barker](https://github.com/josh-barker))
+- Trying to make travis happy [\#87](https://github.com/chef-partners/chef-provisioning-vsphere/pull/87) ([jjasghar](https://github.com/jjasghar))
+- Trying to get back to standards [\#86](https://github.com/chef-partners/chef-provisioning-vsphere/pull/86) ([jjasghar](https://github.com/jjasghar))
+
+## [v2.2.2](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.2.2) (2018-06-05)
 [Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.2.1...v2.2.2)
 
 **Merged pull requests:**
