@@ -220,4 +220,42 @@ describe ChefProvisioningVsphere::VsphereDriver do
       end
     end
   end
+
+  context "#merge_options!" do
+    let(:metal_config) { {} }
+
+    it "Add tupple with string key" do
+      subject.merge_options! "string_key" => "some string"
+      expect(subject.config).to eq machine_options: {
+        string_key: "some string",
+      }
+    end
+
+    it "Add tupple with symbol key" do
+      subject.merge_options! symbol_key: "some other string"
+      expect(subject.config).to eq machine_options: {
+        symbol_key: "some other string",
+      }
+    end
+
+    it "Add empty MergedConfig" do
+      expect($stderr).not_to receive(:puts)
+
+      item = Cheffish::MergedConfig.new()
+      subject.merge_options! item
+
+      expect(subject.config).to eq machine_options: {}
+    end
+
+    it "Add MergedConfig with 1 tupple" do
+      expect($stderr).not_to receive(:puts)
+
+      item = Cheffish::MergedConfig.new(merged_config: "some merged value")
+      subject.merge_options! item
+
+      expect(subject.config).to eq machine_options: {
+        merged_config: "some merged value",
+      }
+    end
+  end
 end
