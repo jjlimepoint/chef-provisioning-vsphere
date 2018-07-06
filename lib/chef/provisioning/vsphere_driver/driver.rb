@@ -683,7 +683,7 @@ module ChefProvisioningVsphere
           last_progress = progress
         end
       end
-      print "\n#{machine_name} done!"
+      print "\n#{machine_name} done!\n\n"
 
       vm = vsphere_helper.find_vm(vm_folder, machine_name)
       add_machine_spec_location(vm, machine_spec)
