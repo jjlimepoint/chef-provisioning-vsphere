@@ -265,6 +265,8 @@ module ChefProvisioningVsphere
         size = size.to_i
         next if size <= 0
 
+        puts "Creating disk with #{size} GB"
+
         task = vm.ReconfigVM_Task(
           spec: RbVmomi::VIM.VirtualMachineConfigSpec(
             deviceChange: [
@@ -278,6 +280,8 @@ module ChefProvisioningVsphere
         )
         task.wait_for_completion
       end
+
+      puts nil unless Array(additional_disk_size_gb).empty?
     end
 
     # Mounts the an iso on the first virtual CD ROm
@@ -286,6 +290,8 @@ module ChefProvisioningVsphere
     # @param [Subject] name of the iso file
     def set_initial_iso(vm, initial_iso_image)
       return unless initial_iso_image
+
+      puts "Mounting #{initial_iso_image} on first virtual CD ROM", nil
 
       d_obj = vm.config.hardware.device.select { |hw| hw.class == RbVmomi::VIM::VirtualCdrom }.first
       backing = RbVmomi::VIM::VirtualCdromIsoBackingInfo(fileName: initial_iso_image)
@@ -327,6 +333,9 @@ module ChefProvisioningVsphere
         end
         return false
       end
+
+      puts "Changing main disk to #{size_gb} GB", nil
+
       disk.capacityInKB = size_kb
       vm.ReconfigVM_Task(
         spec: RbVmomi::VIM.VirtualMachineConfigSpec(
