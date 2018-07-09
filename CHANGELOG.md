@@ -1,7 +1,13 @@
 # Change Log
 
-## [v2.3.0](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.3.0)
+## [2.3.1](https://github.com/chef-partners/chef-provisioning-vsphere/tree/2.3.1) (2018-07-09)
+[Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.3.0...2.3.1)
 
+**Merged pull requests:**
+
+- Improve logging for optional settings [\#90](https://github.com/chef-partners/chef-provisioning-vsphere/pull/90) ([josh-barker](https://github.com/josh-barker))
+
+## [v2.3.0](https://github.com/chef-partners/chef-provisioning-vsphere/tree/v2.3.0) (2018-06-20)
 [Full Changelog](https://github.com/chef-partners/chef-provisioning-vsphere/compare/v2.2.2...v2.3.0)
 
 **Merged pull requests:**
