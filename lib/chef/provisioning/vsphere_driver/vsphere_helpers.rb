@@ -208,6 +208,7 @@ module ChefProvisioningVsphere
     def create_delta_disk(vm_template)
       disks = vm_template.config.hardware.device.grep(RbVmomi::VIM::VirtualDisk)
       disks.select { |disk| disk.backing.parent.nil? }.each do |disk|
+        Chef::Log.info("Creating linked clone for #{disk}")
         spec = {
           deviceChange: [
             {
