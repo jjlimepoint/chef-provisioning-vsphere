@@ -757,8 +757,12 @@ module ChefProvisioningVsphere
         Chef::Provisioning::ConvergenceStrategy::InstallMsi.new(
           mopts, config
         )
-      else
+      elsif machine_options[:cached_installer] == true
         Chef::Provisioning::ConvergenceStrategy::InstallCached.new(
+          mops, config
+        )
+      else
+        Chef::Provisioning::ConvergenceStrategy::InstallSh.new(
           mopts, config
         )
       end
