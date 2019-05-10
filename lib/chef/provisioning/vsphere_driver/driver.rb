@@ -739,6 +739,7 @@ module ChefProvisioningVsphere
     def convergence_strategy_for(machine_spec, machine_options)
       require "chef/provisioning/convergence_strategy/install_msi"
       require "chef/provisioning/convergence_strategy/install_cached"
+      require "chef/provisioning/convergence_strategy/install_sh"
       require "chef/provisioning/convergence_strategy/no_converge"
 
       mopts = machine_options[:convergence_options].to_hash.dup
