@@ -79,9 +79,9 @@ module ChefProvisioningVsphere
     # @param [Object] vm the main VM object to talk to vSphere.
     # @param [Object] timeout Defaults to 600 seconds or 10 mins before giving up.
     def stop_vm(vm, timeout = 600)
-      return if vm.runtime.powerState == "poweredOff"
       shutdown_retry = 8
       begin
+        return if vm.runtime.powerState == "poweredOff"
         start = Time.now.utc
         vm.ShutdownGuest
         until (Time.now.utc - start) > timeout ||
