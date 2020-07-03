@@ -90,6 +90,15 @@ module ChefProvisioningVsphere
           return if vm.runtime.powerState == "poweredOff"
         end
       rescue => e
+        if e.to_s.include?("comparison of Float with nil")
+          puts "This is a bug... waiting instead"
+          puts Kernel.caller
+          while vm.runtime.powerState != "poweredOff"
+            puts vm.runtime.powerState
+            sleep 60
+          end
+          return
+        end
         puts "WARNING: vsphere threw #{e.to_s} when initiating shutdown.... hard powering off"
         vm.PowerOffVM_Task.wait_for_completion
       end
