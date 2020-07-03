@@ -93,7 +93,7 @@ module ChefProvisioningVsphere
         if shutdown_retry > 0
           puts "WARNING: vsphere threw #{e.to_s} when initiating shutdown.... retrying"
           shutdown_retry -= 1
-          sleep(600)
+          sleep(60)
           retry
         end
         vm.PowerOffVM_Task.wait_for_completion
