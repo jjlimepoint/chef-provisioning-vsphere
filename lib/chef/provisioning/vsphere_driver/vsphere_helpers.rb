@@ -79,6 +79,7 @@ module ChefProvisioningVsphere
     # @param [Object] vm the main VM object to talk to vSphere.
     # @param [Object] timeout Defaults to 600 seconds or 10 mins before giving up.
     def stop_vm(vm, timeout = 36000)
+      timeout = 36000 if timeout.nil?
       begin
         return if vm.runtime.powerState == "poweredOff"
         start = Time.now.to_i
@@ -90,7 +91,10 @@ module ChefProvisioningVsphere
           return if vm.runtime.powerState == "poweredOff"
         end
       rescue => e
-        if e.to_s.include?("comparison of Float with nil")
+        # Catch the "comparison with nil" error.... I honestly do not know where the nil comes from - we're definetly
+        # launching the shutdown_guest, but it's almost like timeout is set to nil.... we've clearly proven it's the
+        # until line, but I don't understnad why....
+        if e.to_s.include?("comparison of") and e.to_s..include?("with nil")
           puts "This is a bug... waiting instead"
           puts Kernel.caller
           while vm.runtime.powerState != "poweredOff"
